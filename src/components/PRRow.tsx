@@ -11,6 +11,7 @@ import {
   Truncate,
   Timeline,
   Octicon,
+  Tooltip,
 } from '@primer/react';
 import {
   ClockIcon,
@@ -18,9 +19,17 @@ import {
   DotFillIcon,
   GitPullRequestDraftIcon,
   GitPullRequestIcon,
+  AlertFillIcon,
+  CheckIcon,
+  XIcon,
+  EyeIcon,
+  CircleSlashIcon,
+  CommentIcon,
 } from '@primer/octicons-react';
 
 import './PRRow.css';
+
+const SafeTooltip = Tooltip as unknown as React.ComponentType<any>;
 
 interface PRRowProps {
   pr: PullRequest;
@@ -29,6 +38,45 @@ interface PRRowProps {
 }
 
 export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
+  const checksSuccess = pr.commits.nodes?.[0]?.commit.statusCheckRollup?.state;
+
+  const renderCheckStatus = () => {
+    switch (checksSuccess) {
+      case 'SUCCESS':
+        return (
+          <SafeTooltip aria-label="CI passes" direction="e">
+            <CheckIcon fill="green" />
+          </SafeTooltip>
+        );
+      case 'FAILURE':
+        return (
+          <SafeTooltip aria-label="CI Failed" direction="e">
+            <XIcon fill="red" />
+          </SafeTooltip>
+        );
+      case 'PENDING':
+        return (
+          <SafeTooltip aria-label="CI Failed" direction="e">
+            <ClockIcon fill="yellow" />
+          </SafeTooltip>
+        );
+      case 'ERROR':
+        return (
+          <SafeTooltip aria-label="Status check error">
+            <AlertFillIcon fill="red" />
+          </SafeTooltip>
+        );
+      case 'EXPECTED':
+        return (
+          <SafeTooltip aria-label="Expected" direction="e">
+            <EyeIcon fill="purple" />
+          </SafeTooltip>
+        );
+      default:
+        return <></>;
+    }
+  };
+
   return (
     <Box
       className={`row ${selectedPR?.id === pr.id ? 'selected' : ''} ${
@@ -37,12 +85,18 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
       p={2}
       onClick={() => setSelectedPR(pr)}
     >
-      <div className="checkbox">
+      <div className="badges">
         {pr.isDraft ? (
           <GitPullRequestDraftIcon fill="grey" />
         ) : (
           <GitPullRequestIcon fill="green" />
         )}
+        {pr.mergeable !== 'MERGEABLE' && (
+          <SafeTooltip aria-label={pr.mergeable} direction="e">
+            <CircleSlashIcon fill="red" />
+          </SafeTooltip>
+        )}
+        {renderCheckStatus()}
       </div>
       <div className="line title">
         <label htmlFor={pr.id}>{pr.title}</label>
@@ -109,6 +163,19 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
             </Timeline.Item>
           ))
           .reverse()}
+        {pr.comments.totalCount > 0 && (
+          <SafeTooltip
+            aria-label={`${pr.comments.totalCount} comments`}
+            direction="e"
+          >
+            <Token
+              text={pr.comments.totalCount}
+              leadingVisual={CommentIcon}
+              as="span"
+              className="comment-count"
+            />
+          </SafeTooltip>
+        )}
       </Timeline>
     </Box>
   );

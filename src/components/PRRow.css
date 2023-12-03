@@ -3,9 +3,9 @@
   grid-template-columns: auto 1fr auto 50%;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
-    'checkbox title status timeline'
-    'checkbox labels status timeline '
-    'checkbox meta   status timeline ';
+    'badges title status timeline'
+    'badges labels status timeline '
+    'badges meta   status timeline ';
   gap: 10px;
   background-color: #21262d;
   border-radius: 4px;
@@ -28,8 +28,11 @@
   display: flex;
 }
 
-.checkbox {
-  grid-area: checkbox;
+.badges {
+  grid-area: badges;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .labels {
   grid-area: labels;
@@ -58,9 +61,23 @@
 
 .timeline {
   grid-area: timeline;
+  position: relative;
   background-color: #0d1117;
   padding: 5px 0;
   margin: -5px;
   margin-left: 0;
   border-radius: 5px;
+}
+
+.timeline [role='tooltip'] {
+  position: relative;
+  height: 100%;
+}
+
+.timeline .comment-count {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 5px;
+  background-color: #21262d;
 }

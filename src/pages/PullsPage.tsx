@@ -190,6 +190,7 @@ const query = `
           nodes {
             id
             number
+            mergeable
             title
             url
             createdAt
@@ -217,12 +218,22 @@ const query = `
             }
             isReadByViewer
             comments (last: 5) {
+              totalCount
               nodes {
                 author {
                   login
                 }
                 bodyText
                 createdAt
+              }
+            }
+            commits(last: 1){
+              nodes {
+                commit{
+                  statusCheckRollup {
+                    state
+                  }
+                }
               }
             }
           }
