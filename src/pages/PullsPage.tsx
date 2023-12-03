@@ -121,7 +121,9 @@ export const PRs = () => {
     setPageCursors([undefined]);
     setCurrentPage(1);
     fetchPullRequests();
-  }, [fetchPullRequests, owner, repo]);
+    // Disable this warning because we only want to refetch when the owner or repo changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [owner, repo]);
 
   // TODO: Use this to change page size
   //   const handlePageSizeChange = (newSize: number) => {
