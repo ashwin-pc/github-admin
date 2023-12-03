@@ -1,6 +1,0 @@
-.App {
-  display: grid;
-
-  flex-grow: 1; /* Allows the container to fill available space */
-  overflow: hidden; /* No scroll bars on the grid container */
-}

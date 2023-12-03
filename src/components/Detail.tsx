@@ -14,7 +14,6 @@ import {
 import { DotFillIcon } from '@primer/octicons-react';
 import { useEffect, useState } from 'react';
 import { useGithubApiKey } from '../context';
-import { OWNER, REPO } from './constants';
 
 import './Detail.css';
 
@@ -23,7 +22,7 @@ interface DetailProps {
 }
 
 export const Detail = ({ pr }: DetailProps) => {
-  const { graphqlWithAuth } = useGithubApiKey();
+  const { graphqlWithAuth, owner, repo } = useGithubApiKey();
   const [prDetail, setPrDetail] = useState<PullRequest | null>(null);
 
   useEffect(() => {
@@ -36,8 +35,8 @@ export const Detail = ({ pr }: DetailProps) => {
       const { repository } = await graphqlWithAuth<{ repository: Repository }>(
         query,
         {
-          owner: OWNER,
-          name: REPO,
+          owner: owner,
+          name: repo,
           number: pr.number,
         },
       );
@@ -48,7 +47,7 @@ export const Detail = ({ pr }: DetailProps) => {
 
       setPrDetail(repository.pullRequest);
     })();
-  }, [graphqlWithAuth, pr]);
+  }, [graphqlWithAuth, owner, pr, repo]);
 
   if (!pr || !prDetail) {
     return null;
@@ -57,7 +56,7 @@ export const Detail = ({ pr }: DetailProps) => {
   return (
     <Box className="detail" p={3}>
       <Pagehead fontWeight="bold">
-        <Link className="line title" href={pr.url} target="_blank">
+        <Link className="line title" href={pr.url} target="_blank" muted>
           <Text as="span">#{pr.number}</Text> {pr.title}
         </Link>
       </Pagehead>

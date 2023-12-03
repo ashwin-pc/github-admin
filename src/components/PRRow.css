@@ -1,6 +1,7 @@
 .row {
   display: grid;
   grid-template-columns: auto 1fr auto 50%;
+  grid-template-rows: auto 1fr auto;
   grid-template-areas:
     'checkbox title status timeline'
     'checkbox labels status timeline '

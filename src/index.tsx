@@ -2,22 +2,47 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider, BaseStyles } from '@primer/react';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { GithubApiKeyProvider } from './context';
+import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Login } from './pages/LoginPage';
+import ErrorPage from './pages/ErrorPage';
+import { PRs } from './pages/PullsPage';
+
+const SafeBaseStyles = BaseStyles as React.ComponentType<any>;
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <GithubApiKeyProvider>
+        <Outlet />
+      </GithubApiKeyProvider>
+    ),
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: '/',
+        element: <PRs />,
+      },
+      {
+        path: '/login',
+        element: <Login />,
+      },
+    ],
+  },
+]);
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 root.render(
   <React.StrictMode>
-    <GithubApiKeyProvider>
-      <ThemeProvider colorMode="dark">
-        {/* <BaseStyles> */}
-        <App />
-        {/* </BaseStyles> */}
-      </ThemeProvider>
-    </GithubApiKeyProvider>
+    <ThemeProvider colorMode="dark">
+      <SafeBaseStyles>
+        <RouterProvider router={router} />
+      </SafeBaseStyles>
+    </ThemeProvider>
   </React.StrictMode>,
 );
 

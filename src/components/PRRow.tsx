@@ -14,7 +14,13 @@ import {
   Timeline,
   Octicon,
 } from '@primer/react';
-import { ClockIcon, PencilIcon, DotFillIcon } from '@primer/octicons-react';
+import {
+  ClockIcon,
+  PencilIcon,
+  DotFillIcon,
+  GitPullRequestDraftIcon,
+  GitPullRequestIcon,
+} from '@primer/octicons-react';
 
 import './PRRow.css';
 
@@ -34,10 +40,11 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
       onClick={() => setSelectedPR(pr)}
     >
       <div className="checkbox">
-        <FormControl id={`check-${pr.id}`}>
-          <FormControl.Label sx={{ display: 'none' }} />
-          <Checkbox />
-        </FormControl>
+        {pr.isDraft ? (
+          <GitPullRequestDraftIcon fill="grey" />
+        ) : (
+          <GitPullRequestIcon fill="green" />
+        )}
       </div>
       <div className="line title">
         <label htmlFor={pr.id}>{pr.title}</label>
@@ -51,6 +58,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
               style={{
                 borderColor: `#${label?.color}`,
                 color: `#${label?.color}`,
+                backgroundColor: `#${label?.color}33`,
               }}
             >
               {label?.name}
@@ -59,7 +67,13 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
         </LabelGroup>
       </div>
       <div className="line meta">
-        <Link className="pr_number" href={pr.url}>
+        <Link
+          className="pr_number"
+          href={pr.url}
+          muted
+          underline
+          target="_blank"
+        >
           #{pr.number}
         </Link>
         <div className="time">
@@ -78,18 +92,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
       </div>
       <div className="status">
         {pr.viewerLatestReview?.author?.login && (
-          <Token
-            className="token"
-            sx={{ bg: 'green', color: 'white' }}
-            text={pr.viewerLatestReview?.state}
-          />
-        )}
-        {pr.isDraft && (
-          <Token
-            className="token"
-            sx={{ bg: 'gray', color: 'white' }}
-            text="Draft"
-          />
+          <Token className="token" text={pr.viewerLatestReview?.state} />
         )}
       </div>
       <Timeline className="timeline">
