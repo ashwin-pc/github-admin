@@ -1,6 +1,7 @@
 import { Blankslate } from '@primer/react/drafts';
 import { useRouteError } from 'react-router-dom';
 import { XCircleFillIcon } from '@primer/octicons-react';
+import { BASE_PATH } from '../components/constants';
 
 export default function ErrorPage() {
   const error = useRouteError() as any;
@@ -18,9 +19,11 @@ export default function ErrorPage() {
         to the home page.
         {error.statusText || error.message}
       </Blankslate.Description>
-      <Blankslate.PrimaryAction href="/">Go Home</Blankslate.PrimaryAction>
+      <Blankslate.PrimaryAction href={BASE_PATH}>
+        Go Home
+      </Blankslate.PrimaryAction>
       <Blankslate.SecondaryAction href="https://github.com">
-        Go to github
+        Go to Github
       </Blankslate.SecondaryAction>
     </Blankslate>
   );
