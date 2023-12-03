@@ -1,0 +1,45 @@
+.page {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  grid-template-areas:
+    'title title'
+    'list  detail';
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.grid-item {
+  max-height: 100%; /* Limit height to parent */
+  max-width: 100%; /* Limit width to parent */
+  overflow: auto; /* Enable scrollbars when content overflows */
+  /* Add padding, border, or any additional styling as needed */
+}
+
+.page-title {
+  grid-area: title;
+}
+
+.list-view {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 10px;
+}
+
+.author {
+  color: #848d97;
+}
+
+.detail-view {
+  grid-area: detail;
+}

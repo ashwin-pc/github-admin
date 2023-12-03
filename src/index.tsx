@@ -1,16 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ThemeProvider, BaseStyles } from '@primer/react';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { GithubApiKeyProvider } from './context';
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );
 root.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <GithubApiKeyProvider>
+      <ThemeProvider colorMode="dark">
+        {/* <BaseStyles> */}
+        <App />
+        {/* </BaseStyles> */}
+      </ThemeProvider>
+    </GithubApiKeyProvider>
+  </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

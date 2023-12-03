@@ -1,0 +1,11 @@
+.detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-body {
+  background-color: #21262d;
+  border-radius: 4px;
+  padding: 0 20px;
+  margin-top: 20px;
+}
