@@ -6,22 +6,21 @@ import {
   Text,
   Link,
   Timeline,
-  Octicon,
   Truncate,
   RelativeTime,
   Pagehead,
+  Avatar,
 } from '@primer/react';
-import { DotFillIcon } from '@primer/octicons-react';
 import { useEffect, useState } from 'react';
 import { useGithubApiKey } from '../context';
-
 import './Detail.css';
 
 interface DetailProps {
   pr?: PullRequest;
+  onClose: () => void;
 }
 
-export const Detail = ({ pr }: DetailProps) => {
+export const Detail = ({ pr, onClose }: DetailProps) => {
   const { graphqlWithAuth, owner, repo } = useGithubApiKey();
   const [prDetail, setPrDetail] = useState<PullRequest | null>(null);
 
@@ -57,10 +56,12 @@ export const Detail = ({ pr }: DetailProps) => {
   }
 
   return (
-    <Box className="detail" p={3}>
+    <Box className="detail">
       <Pagehead fontWeight="bold">
         <Link className="line title" href={pr.url} target="_blank" muted>
-          <Text as="span">#{pr.number}</Text> {pr.title}
+          <Text as="span">
+            #{pr.number} {pr.title}
+          </Text>
         </Link>
       </Pagehead>
       <Timeline className="timeline">
@@ -68,7 +69,11 @@ export const Detail = ({ pr }: DetailProps) => {
           ?.map((comment) => (
             <Timeline.Item condensed="true" key={`detail-${comment?.id}`}>
               <Timeline.Badge>
-                <Octicon icon={DotFillIcon} />
+                <Avatar
+                  size={17}
+                  src={comment?.author?.avatarUrl}
+                  aria-label={comment?.author?.login}
+                />
               </Timeline.Badge>
               <Timeline.Body>
                 <Truncate maxWidth={600} title={comment?.bodyText || ''}>
@@ -80,31 +85,34 @@ export const Detail = ({ pr }: DetailProps) => {
           ))
           .reverse()}
       </Timeline>
-      <Text
-        as="div"
-        className="pr-body"
-        dangerouslySetInnerHTML={{ __html: prDetail.bodyHTML || '' }}
-      />
+      <Box>
+        <Text
+          as="div"
+          className="pr-body"
+          dangerouslySetInnerHTML={{ __html: prDetail.bodyHTML || '' }}
+        />
+      </Box>
     </Box>
   );
 };
 
 const query = `
-    query GetPullRequest($owner: String!, $name: String!, $number: Int!) {
-        repository(owner: $owner, name: $name) {
-            pullRequest(number: $number) {
-                bodyHTML
-                comments (first: 100){
-                    totalCount
-                    nodes {
-                      bodyText
-                      author {
-                        login
-                      }
-                    createdAt
-                    }
-                  }
+  query GetPullRequest($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      pullRequest(number: $number) {
+        bodyHTML
+        comments (first: 100){
+          totalCount
+          nodes {
+            bodyText
+            author {
+              login
+              avatarUrl
             }
+            createdAt
+          }
         }
+      }
     }
+  }
 `;

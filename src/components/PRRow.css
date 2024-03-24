@@ -1,11 +1,12 @@
 .row {
   display: grid;
-  grid-template-columns: auto 1fr auto 50%;
+  grid-template-columns: auto 1fr auto 30%;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     'badges title status timeline'
     'badges labels status timeline '
-    'badges meta   status timeline ';
+    'badges meta   status timeline '
+    'sla sla sla sla';
   gap: 10px;
   cursor: pointer;
 }
@@ -40,6 +41,13 @@
   gap: 5px;
 }
 
+.sla {
+  grid-area: sla;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .time {
   display: flex;
   flex-direction: column;
@@ -48,8 +56,6 @@
 .timeline {
   grid-area: timeline;
   position: relative;
-  padding: 5px 0;
-  margin: -5px;
   margin-left: 0;
   border-radius: 5px;
 }

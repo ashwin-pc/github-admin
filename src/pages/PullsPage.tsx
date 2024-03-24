@@ -8,6 +8,7 @@ import {
   FormControl,
   TextInput,
   Spinner,
+  PageLayout,
 } from '@primer/react';
 import { SearchIcon, GitPullRequestIcon } from '@primer/octicons-react';
 import './PullsPage.css';
@@ -30,7 +31,9 @@ export const PRs = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
   const [totalPRs, setTotalPRs] = useState(0);
-  const [selectedPR, setSelectedPR] = useState<PullRequest>(pullRequests[0]);
+  const [selectedPR, setSelectedPR] = useState<PullRequest | undefined>(
+    pullRequests[0],
+  );
   const pageSize = 25;
 
   useEffect(() => {
@@ -98,103 +101,111 @@ export const PRs = () => {
   }, []);
 
   return (
-    <Box
-      className="page"
+    <PageLayout
+      containerWidth="full"
       sx={{
         bg: 'canvas.default',
+        minHeight: '100vh',
       }}
+      padding="none"
     >
-      <PageHeader />
-      <Box className="nav-bar grid-item">
-        <UnderlineNav aria-label="Main">
-          <UnderlineNav.Item
-            href={`/`}
-            aria-current="page"
-            counter={totalPRs}
-            icon={GitPullRequestIcon}
-          >
-            Pull Requests
-          </UnderlineNav.Item>
-        </UnderlineNav>
-      </Box>
-      <Box className="list-view grid-item">
-        <Box className="search-bar-container">
-          <FormControl>
-            <FormControl.Label>Search</FormControl.Label>
-            <FormControl.Caption>
-              Can be any query that fetches only pull requests. You can find the
-              search syntax guide{' '}
-              <Link to="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
-                here
-              </Link>
-            </FormControl.Caption>
-            <TextInput
-              prefix="Test"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search pull requests..."
-              width={`100%`}
-              trailingAction={
-                <TextInput.Action
-                  onClick={() => fetchPullRequests()}
-                  icon={SearchIcon}
-                  sx={{ color: 'gray.5' }}
-                />
-              }
-              onKeyUp={(e) => {
-                if (e.key === 'Enter' && !isFetching && !e.shiftKey) {
-                  fetchPullRequests();
-                }
-              }}
-            />
-          </FormControl>
-        </Box>
-        <Box className="pr-list grid-item">
-          <ErrorBoundary>
-            <>
-              {isFetching ? (
-                <Blankslate>
-                  <Blankslate.Visual>
-                    <Spinner />
-                  </Blankslate.Visual>
-                  <Blankslate.Heading>Loading the data!</Blankslate.Heading>
-                  <Blankslate.Description>
-                    Please wait, we are fetching the data for you.
-                  </Blankslate.Description>
-                  <Blankslate.PrimaryAction href="#">
-                    Reload
-                  </Blankslate.PrimaryAction>
-                </Blankslate>
-              ) : (
-                pullRequests.map((pr, index) => (
-                  <PRRow
-                    key={`list-${index}`}
-                    pr={pr}
-                    setSelectedPR={setSelectedPR}
-                    selectedPR={selectedPR}
-                  />
-                ))
-              )}
-            </>
-          </ErrorBoundary>
-        </Box>
-        <Box className="load-more-container">
-          {pageInfo.hasNextPage && !isFetching && (
-            <Button
-              variant="invisible"
-              disabled={isFetching}
-              onClick={() => fetchPullRequests(pageInfo.endCursor)}
+      <PageLayout.Header>
+        <PageHeader />
+        <Box className="nav-bar grid-item">
+          <UnderlineNav aria-label="Main">
+            <UnderlineNav.Item
+              href={`/`}
+              aria-current="page"
+              counter={totalPRs}
+              icon={GitPullRequestIcon}
             >
-              {isFetching ? 'Loading...' : 'Load More'}
-            </Button>
-          )}
+              Pull Requests
+            </UnderlineNav.Item>
+          </UnderlineNav>
         </Box>
-      </Box>
-      <Box className="details-view grid-item">
-        <Detail pr={selectedPR} />
-      </Box>
-    </Box>
+      </PageLayout.Header>
+      <PageLayout.Content>
+        <Box className="list-view grid-item">
+          <Box className="search-bar-container">
+            <FormControl>
+              <FormControl.Label>Search</FormControl.Label>
+              <FormControl.Caption>
+                Can be any query that fetches only pull requests. You can find
+                the search syntax guide{' '}
+                <Link to="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
+                  here
+                </Link>
+              </FormControl.Caption>
+              <TextInput
+                prefix="Test"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search pull requests..."
+                width={`100%`}
+                trailingAction={
+                  <TextInput.Action
+                    onClick={() => fetchPullRequests()}
+                    icon={SearchIcon}
+                    sx={{ color: 'gray.5' }}
+                  />
+                }
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter' && !isFetching && !e.shiftKey) {
+                    fetchPullRequests();
+                  }
+                }}
+              />
+            </FormControl>
+          </Box>
+          <Box className="pr-list grid-item">
+            <ErrorBoundary>
+              <>
+                {isFetching ? (
+                  <Blankslate>
+                    <Blankslate.Visual>
+                      <Spinner />
+                    </Blankslate.Visual>
+                    <Blankslate.Heading>Loading the data!</Blankslate.Heading>
+                    <Blankslate.Description>
+                      Please wait, we are fetching the data for you.
+                    </Blankslate.Description>
+                    <Blankslate.PrimaryAction href="#">
+                      Reload
+                    </Blankslate.PrimaryAction>
+                  </Blankslate>
+                ) : (
+                  pullRequests.map((pr, index) => (
+                    <PRRow
+                      key={`list-${index}`}
+                      pr={pr}
+                      setSelectedPR={setSelectedPR}
+                      selectedPR={selectedPR}
+                    />
+                  ))
+                )}
+              </>
+            </ErrorBoundary>
+          </Box>
+          <Box className="load-more-container">
+            {pageInfo.hasNextPage && !isFetching && (
+              <Button
+                variant="invisible"
+                disabled={isFetching}
+                onClick={() => fetchPullRequests(pageInfo.endCursor)}
+              >
+                {isFetching ? 'Loading...' : 'Load More'}
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </PageLayout.Content>
+      <PageLayout.Pane hidden={!selectedPR} resizable sticky>
+        <Box className="details-view grid-item">
+          <Detail pr={selectedPR} onClose={() => setSelectedPR(undefined)} />
+        </Box>
+      </PageLayout.Pane>
+    </PageLayout>
   );
 };
 
@@ -207,8 +218,8 @@ const searchQuery = `
         hasNextPage
       }
       nodes {
+        __typename
         ... on PullRequest {
-          __typename
           id
           number
           mergeable
@@ -230,13 +241,15 @@ const searchQuery = `
               name
             }
           }
-          reviews(first: 1, states: [APPROVED, CHANGES_REQUESTED]) {
+          reviews(last: 1) {
+            totalCount
             nodes {
-              author {
-                login
-              }
               state
+              updatedAt
             }
+          }
+          reviewRequests(first: 1) {
+            totalCount
           }
           isDraft
           assignees(first: 10) {
@@ -245,11 +258,12 @@ const searchQuery = `
               login
             }
           }
-          comments(last: 5) {
+          comments(last: 3) {
             totalCount
             nodes {
               author {
                 login
+                avatarUrl
               }
               bodyText
               createdAt

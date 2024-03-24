@@ -10,13 +10,11 @@ import {
   Token,
   Truncate,
   Timeline,
-  Octicon,
-  Tooltip,
+  Avatar,
 } from '@primer/react';
 import {
   ClockIcon,
   PencilIcon,
-  DotFillIcon,
   GitPullRequestDraftIcon,
   GitPullRequestIcon,
   GitMergeIcon,
@@ -26,15 +24,14 @@ import {
   EyeIcon,
   CommentIcon,
 } from '@primer/octicons-react';
-
+import { Tooltip } from './Tooltip';
 import './PRRow.css';
-
-const SafeTooltip = Tooltip as unknown as React.ComponentType<any>;
+import { calculateMetrics } from '../utils/calc_metrics';
 
 interface PRRowProps {
   pr: PullRequest;
   selectedPR?: PullRequest;
-  setSelectedPR: (pr: PullRequest) => void;
+  setSelectedPR: React.Dispatch<React.SetStateAction<PullRequest | undefined>>;
 }
 
 export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
@@ -44,33 +41,33 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
     switch (checksSuccess) {
       case 'SUCCESS':
         return (
-          <SafeTooltip aria-label="CI passes" direction="e">
+          <Tooltip aria-label="CI passes" direction="e">
             <CheckIcon fill="green" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'FAILURE':
         return (
-          <SafeTooltip aria-label="CI Failed" direction="e">
+          <Tooltip aria-label="CI Failed" direction="e">
             <XIcon fill="red" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'PENDING':
         return (
-          <SafeTooltip aria-label="CI Failed" direction="e">
+          <Tooltip aria-label="CI Failed" direction="e">
             <ClockIcon fill="yellow" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'ERROR':
         return (
-          <SafeTooltip aria-label="Status check error">
+          <Tooltip aria-label="Status check error">
             <AlertFillIcon fill="red" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'EXPECTED':
         return (
-          <SafeTooltip aria-label="Expected" direction="e">
+          <Tooltip aria-label="Expected" direction="e">
             <EyeIcon fill="purple" />
-          </SafeTooltip>
+          </Tooltip>
         );
       default:
         return <></>;
@@ -81,18 +78,18 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
     // Draft PRs are marked separately
     if (pr.isDraft) {
       return (
-        <SafeTooltip aria-label="Draft" direction="e">
+        <Tooltip aria-label="Draft" direction="e">
           <GitPullRequestDraftIcon fill="grey" />
-        </SafeTooltip>
+        </Tooltip>
       );
     }
 
     // Check if it is already merged
     if (pr.merged) {
       return (
-        <SafeTooltip aria-label="Merged" direction="e">
+        <Tooltip aria-label="Merged" direction="e">
           <GitMergeIcon fill="--fgColor-done" />
-        </SafeTooltip>
+        </Tooltip>
       );
     }
 
@@ -100,31 +97,35 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
     switch (pr.mergeable) {
       case 'MERGEABLE':
         return (
-          <SafeTooltip aria-label="Mergeable PR" direction="e">
+          <Tooltip aria-label="Mergeable PR" direction="e">
             <GitPullRequestIcon fill="green" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'CONFLICTING':
         return (
-          <SafeTooltip aria-label="Has a conflict" direction="e">
+          <Tooltip aria-label="Has a conflict" direction="e">
             <GitMergeIcon fill="red" />
-          </SafeTooltip>
+          </Tooltip>
         );
       case 'UNKNOWN':
         return (
-          <SafeTooltip aria-label="Unknown" direction="e">
+          <Tooltip aria-label="Unknown" direction="e">
             <GitPullRequestIcon fill="grey" />
-          </SafeTooltip>
+          </Tooltip>
         );
       default:
         return <></>;
     }
   };
 
+  console.log(calculateMetrics(pr));
+
   return (
     <Box
       className={`row ${selectedPR?.id === pr.id ? 'selected' : ''}`}
-      onClick={() => setSelectedPR(pr)}
+      onClick={() =>
+        setSelectedPR((currentPr) => (currentPr === pr ? undefined : pr))
+      }
       sx={{
         border: '1px solid',
         borderColor: 'border.subtle',
@@ -198,7 +199,11 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
           ?.map((comment) => (
             <Timeline.Item condensed="true" key={comment?.id}>
               <Timeline.Badge>
-                <Octicon icon={DotFillIcon} />
+                <Avatar
+                  size={17}
+                  src={comment?.author?.avatarUrl}
+                  aria-label={comment?.author?.login}
+                />
               </Timeline.Badge>
               <Timeline.Body>
                 <Truncate maxWidth={600} title={comment?.bodyText || ''}>
@@ -210,7 +215,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
           ))
           .reverse()}
         {pr.comments.totalCount > 0 && (
-          <SafeTooltip
+          <Tooltip
             aria-label={`${pr.comments.totalCount} comments`}
             direction="w"
           >
@@ -220,7 +225,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
               as="span"
               className="comment-count"
             />
-          </SafeTooltip>
+          </Tooltip>
         )}
       </Timeline>
     </Box>
