@@ -89,6 +89,7 @@ export const GithubApiKeyProvider = (props: any) => {
     if (params.repo) {
       setRepo(params.repo as string);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
   return (

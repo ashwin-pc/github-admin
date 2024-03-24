@@ -34,10 +34,10 @@ export const Login = () => {
       </Blankslate.Visual>
       <Blankslate.Heading>Lets login to the app!</Blankslate.Heading>
       <Blankslate.Description>
-        <p>Enter your GitHub API key to get started</p>
+        <p>Enter your GitHub Access Token to get started.</p>
         <Box as="form">
           <FormControl>
-            <FormControl.Label>Api Key</FormControl.Label>
+            <FormControl.Label>Access Token</FormControl.Label>
             <TextInput
               sx={{ width: '100%' }}
               {...(isValid ? {} : { validationStatus: 'error' })}
@@ -46,7 +46,7 @@ export const Login = () => {
             />
             {!isValid && (
               <FormControl.Validation variant="error">
-                Api Key is invalid
+                Token is invalid
               </FormControl.Validation>
             )}
           </FormControl>
@@ -59,13 +59,16 @@ export const Login = () => {
               type="submit"
               variant="primary"
             >
-              Use key
+              Use Token
             </Button>
           </FormControl>
         </Box>
       </Blankslate.Description>
+      <Blankslate.SecondaryAction href="https://github.com/settings/tokens">
+        Get a Personal Access Token
+      </Blankslate.SecondaryAction>
       <Blankslate.SecondaryAction href="https://github.com">
-        Go to github
+        Go to GitHub
       </Blankslate.SecondaryAction>
     </Blankslate>
   );

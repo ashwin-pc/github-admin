@@ -19,11 +19,11 @@ import {
   DotFillIcon,
   GitPullRequestDraftIcon,
   GitPullRequestIcon,
+  GitMergeIcon,
   AlertFillIcon,
   CheckIcon,
   XIcon,
   EyeIcon,
-  CircleSlashIcon,
   CommentIcon,
 } from '@primer/octicons-react';
 
@@ -77,25 +77,65 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
     }
   };
 
+  const renderMergeStatus = () => {
+    // Draft PRs are marked separately
+    if (pr.isDraft) {
+      return (
+        <SafeTooltip aria-label="Draft" direction="e">
+          <GitPullRequestDraftIcon fill="grey" />
+        </SafeTooltip>
+      );
+    }
+
+    // Check if it is already merged
+    if (pr.merged) {
+      return (
+        <SafeTooltip aria-label="Merged" direction="e">
+          <GitMergeIcon fill="--fgColor-done" />
+        </SafeTooltip>
+      );
+    }
+
+    // Mergeable status
+    switch (pr.mergeable) {
+      case 'MERGEABLE':
+        return (
+          <SafeTooltip aria-label="Mergeable PR" direction="e">
+            <GitPullRequestIcon fill="green" />
+          </SafeTooltip>
+        );
+      case 'CONFLICTING':
+        return (
+          <SafeTooltip aria-label="Has a conflict" direction="e">
+            <GitMergeIcon fill="red" />
+          </SafeTooltip>
+        );
+      case 'UNKNOWN':
+        return (
+          <SafeTooltip aria-label="Unknown" direction="e">
+            <GitPullRequestIcon fill="grey" />
+          </SafeTooltip>
+        );
+      default:
+        return <></>;
+    }
+  };
+
   return (
     <Box
-      className={`row ${selectedPR?.id === pr.id ? 'selected' : ''} ${
-        pr.isReadByViewer ? '' : 'unread'
-      }`}
-      p={2}
+      className={`row ${selectedPR?.id === pr.id ? 'selected' : ''}`}
       onClick={() => setSelectedPR(pr)}
+      sx={{
+        border: '1px solid',
+        borderColor: 'border.subtle',
+        backgroundColor: 'canvas.inset',
+        '&:hover': {
+          backgroundColor: 'canvas.subtle',
+        },
+      }}
     >
       <div className="badges">
-        {pr.isDraft ? (
-          <GitPullRequestDraftIcon fill="grey" />
-        ) : (
-          <GitPullRequestIcon fill="green" />
-        )}
-        {pr.mergeable !== 'MERGEABLE' && (
-          <SafeTooltip aria-label={pr.mergeable} direction="e">
-            <CircleSlashIcon fill="red" />
-          </SafeTooltip>
-        )}
+        {renderMergeStatus()}
         {renderCheckStatus()}
       </div>
       <div className="line title">
@@ -137,6 +177,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
             <div>
               <PencilIcon size={14} fill="#afb8c133" />{' '}
               <RelativeTime date={new Date(pr.lastEditedAt)} />
+              {pr.editor && ` by ${pr.editor.login}`}
             </div>
           )}
         </div>
@@ -147,7 +188,12 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
           <Token className="token" text={pr.viewerLatestReview?.state} />
         )}
       </div>
-      <Timeline className="timeline">
+      <Timeline
+        className="timeline"
+        sx={{
+          backgroundColor: 'canvas.default',
+        }}
+      >
         {pr.comments.nodes
           ?.map((comment) => (
             <Timeline.Item condensed="true" key={comment?.id}>
@@ -166,7 +212,7 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
         {pr.comments.totalCount > 0 && (
           <SafeTooltip
             aria-label={`${pr.comments.totalCount} comments`}
-            direction="e"
+            direction="w"
           >
             <Token
               text={pr.comments.totalCount}

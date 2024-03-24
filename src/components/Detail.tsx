@@ -32,20 +32,23 @@ export const Detail = ({ pr }: DetailProps) => {
         return;
       }
 
-      const { repository } = await graphqlWithAuth<{ repository: Repository }>(
-        query,
-        {
+      try {
+        const { repository } = await graphqlWithAuth<{
+          repository: Repository;
+        }>(query, {
           owner: owner,
           name: repo,
           number: pr.number,
-        },
-      );
+        });
 
-      if (!repository.pullRequest) {
-        return;
+        if (!repository.pullRequest) {
+          return;
+        }
+
+        setPrDetail(repository.pullRequest);
+      } catch (e) {
+        console.error(e);
       }
-
-      setPrDetail(repository.pullRequest);
     })();
   }, [graphqlWithAuth, owner, pr, repo]);
 

@@ -15,7 +15,6 @@ body {
     Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0d1117;
   display: flex; /* Ensures the grid container can expand to fit */
   flex-direction: column; /* Stack children vertically */
 }

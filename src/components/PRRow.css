@@ -7,21 +7,7 @@
     'badges labels status timeline '
     'badges meta   status timeline ';
   gap: 10px;
-  background-color: #21262d;
-  border-radius: 4px;
   cursor: pointer;
-}
-
-.row:hover {
-  background-color: #2d333b;
-}
-
-.row.unread {
-  border-left: 2px solid #2f81f7;
-}
-
-.row.selected {
-  background-color: #2e3d4d;
 }
 
 .line {
@@ -62,7 +48,6 @@
 .timeline {
   grid-area: timeline;
   position: relative;
-  background-color: #0d1117;
   padding: 5px 0;
   margin: -5px;
   margin-left: 0;
@@ -79,5 +64,4 @@
   right: 5px;
   bottom: 5px;
   padding: 5px;
-  background-color: #21262d;
 }
