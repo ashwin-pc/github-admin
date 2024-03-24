@@ -1,0 +1,48 @@
+.row {
+  display: grid;
+  grid-template-columns: auto 30% 20%;
+  grid-template-areas: 'content timeline stats';
+  gap: 5px;
+  cursor: pointer;
+}
+
+.content {
+  grid-area: content;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  gap: 7px;
+}
+
+.timeline {
+  grid-area: timeline;
+  position: relative;
+  margin-left: 0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.stats {
+  grid-area: stats;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+  justify-content: center;
+}
+
+.stats span {
+  padding-left: 5px;
+}
+
+.content > .status {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.content,
+.timeline,
+.stats {
+  padding: 5px;
+}

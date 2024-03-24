@@ -147,7 +147,6 @@ export const PRs = () => {
                   <TextInput.Action
                     onClick={() => fetchPullRequests()}
                     icon={SearchIcon}
-                    sx={{ color: 'gray.5' }}
                   />
                 }
                 onKeyUp={(e) => {
@@ -241,11 +240,25 @@ const searchQuery = `
               name
             }
           }
-          reviews(last: 1) {
+          reviews(last: 100) {
             totalCount
             nodes {
               state
               updatedAt
+              author {
+                login
+                avatarUrl
+              }
+              comments (last: 100) {
+                nodes {
+                  outdated
+                  isMinimized
+                  author {
+                    login
+                    avatarUrl
+                  }
+                }
+              }
             }
           }
           reviewRequests(first: 1) {
@@ -256,6 +269,7 @@ const searchQuery = `
             nodes {
               id
               login
+              avatarUrl
             }
           }
           comments(last: 3) {
@@ -267,17 +281,29 @@ const searchQuery = `
               }
               bodyText
               createdAt
+              updatedAt
             }
           }
           commits(last: 1) {
+            totalCount
             nodes {
               commit {
+                authoredDate
                 statusCheckRollup {
                   state
+                }
+                author {
+                  user {
+                    login
+                    avatarUrl
+                  }
                 }
               }
             }
           }
+          additions
+          deletions
+          changedFiles
         }
       }
     }
