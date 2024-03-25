@@ -57,10 +57,12 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
             as="span"
             sx={{
               marginLeft: '8px',
+              marginRight: '4px',
             }}
           >
             {pr.author?.login}
           </Text>
+          {' | '}
           {(pr?.assignees?.nodes?.length || 0) > 0 ? (
             <Tooltip
               aria-label={getUniqueValues(
@@ -79,7 +81,6 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
                   marginRight: '8px',
                 }}
               >
-                {' |  '}
                 Assigned:{' '}
               </Text>
               <AvatarStack>
@@ -98,9 +99,10 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
               sx={{
                 marginLeft: '4px',
                 marginRight: '8px',
+                color: 'attention.fg',
               }}
             >
-              {' |  Unassigned'}
+              {'Unassigned'}
             </Text>
           )}
         </Box>

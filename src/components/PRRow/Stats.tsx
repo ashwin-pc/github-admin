@@ -7,12 +7,7 @@ import {
   Text,
 } from '@primer/react';
 
-import {
-  ClockIcon,
-  PencilIcon,
-  CommentIcon,
-  FileDiffIcon,
-} from '@primer/octicons-react';
+import { ClockIcon, CommentIcon, FileDiffIcon } from '@primer/octicons-react';
 import {
   PullRequest,
   PullRequestReview,
@@ -23,51 +18,7 @@ import React from 'react';
 import { Tooltip } from '../Tooltip';
 import { getUniqueValues } from '../../utils/common';
 
-interface Activity {
-  type: string;
-  author: {
-    login?: string;
-    avatarUrl: string;
-  };
-  date: string;
-}
-
 export const Stats = ({ pr }: { pr: PullRequest }) => {
-  // Calculate last activity user and time
-  const activities: Activity[] = [
-    ...(pr.comments.nodes || []).map((c) => ({
-      type: 'Comment',
-      author: {
-        login: c?.author?.login,
-        avatarUrl: c?.author?.avatarUrl,
-      },
-      date: c?.updatedAt || c?.createdAt,
-    })),
-    ...(pr.commits.nodes || []).map((c) => ({
-      type: 'Commit',
-      author: {
-        login: c?.commit?.author?.user?.login,
-        avatarUrl: c?.commit?.author?.user?.avatarUrl,
-      },
-      date: c?.commit?.authoredDate,
-    })),
-    ...(pr.reviews?.nodes || []).map((r) => ({
-      type: 'Review',
-      author: {
-        login: r?.author?.login,
-        avatarUrl: r?.author?.avatarUrl,
-      },
-      date: r?.updatedAt,
-    })),
-  ];
-
-  // Find the most recent activity
-  const mostRecentActivity = activities.reduce(
-    (latest, current) =>
-      new Date(current.date) > new Date(latest.date) ? current : latest,
-    activities[0],
-  );
-
   // Collect comments from reviews, ensuring every step accounts for possible null values
   const unresolvedComments = pr.reviews?.nodes
     ?.filter(
@@ -134,23 +85,6 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
           </>
         }
       />
-      {/* Last activity by */}
-      <Stat
-        icon={PencilIcon}
-        text={
-          <>
-            {`Update: ${mostRecentActivity.type} `}
-            <RelativeTime datetime={mostRecentActivity.date} />
-            {' by '}
-            <Avatar
-              size={15}
-              src={mostRecentActivity.author.avatarUrl}
-              aria-label={mostRecentActivity.author.login}
-            />
-            {` ${mostRecentActivity.author.login}`}
-          </>
-        }
-      />
       {/* Unresolved comments */}
       {unresolvedComments && unresolvedComments.length > 0 && (
         <Stat
@@ -177,7 +111,7 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
                   {getUniqueValues(
                     unresolvedComments.map((c) => c.author?.avatarUrl),
                   ).map((url) => (
-                    <Avatar src={url} size={15} />
+                    <Avatar src={url} size={15} key={url} />
                   ))}
                 </AvatarStack>
               </Tooltip>

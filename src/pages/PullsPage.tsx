@@ -272,16 +272,44 @@ const searchQuery = `
               avatarUrl
             }
           }
-          comments(last: 3) {
+          comments(last: 1) {
+            totalCount
+          }
+          timelineItems (last: 10, itemTypes: [ASSIGNED_EVENT, PULL_REQUEST_COMMIT, PULL_REQUEST_REVIEW, ISSUE_COMMENT]) {
             totalCount
             nodes {
-              author {
-                login
-                avatarUrl
+              __typename
+              ... on AssignedEvent {
+                createdAt
+                assignee {
+                  ... on User {
+                    avatarUrl
+                    login
+                  }
+                }
               }
-              bodyText
-              createdAt
-              updatedAt
+              ... on PullRequestReview {
+                author {
+                  avatarUrl
+                  login
+                }
+                state
+                updatedAt
+              }
+              ... on PullRequestCommit {
+                commit {
+                  abbreviatedOid
+                  authoredDate
+                }
+              }
+              ... on IssueComment {
+                author {
+                  login
+                  avatarUrl
+                }
+                updatedAt
+                bodyText
+              }
             }
           }
           commits(last: 1) {
@@ -291,6 +319,16 @@ const searchQuery = `
                 authoredDate
                 statusCheckRollup {
                   state
+                  contexts (first: 100){
+                    totalCount
+                    nodes {
+                      ... on CheckRun {
+                        status
+                        name
+                        conclusion
+                      }
+                    }
+                  }
                 }
                 author {
                   user {
