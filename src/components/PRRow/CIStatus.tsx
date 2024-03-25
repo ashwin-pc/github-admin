@@ -40,8 +40,6 @@ const getCIResult = (pr: PullRequest): CIResult => {
   const groupByConclusion = groupBy<CheckRun>(dedupedRuns, 'conclusion');
   const groupByStatus = groupBy<CheckRun>(dedupedRuns, 'status');
 
-  debugger;
-
   switch (rollupState) {
     case 'SUCCESS':
       return {
