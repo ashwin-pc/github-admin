@@ -1,4 +1,8 @@
-import { PullRequest, PullRequestTimelineItems } from '@octokit/graphql-schema';
+import {
+  PullRequest,
+  PullRequestReview,
+  PullRequestTimelineItems,
+} from '@octokit/graphql-schema';
 
 export interface Activity {
   type?: PullRequestTimelineItems['__typename'];
@@ -32,7 +36,7 @@ export const getTimelineEvents = (pr: PullRequest) => {
           ...activity,
           date: item.updatedAt,
           author: item.author,
-          message: `${item.state} by ${item.author?.login}`,
+          message: getReviewMessage(item),
         };
 
       case 'PullRequestCommit':
@@ -64,6 +68,7 @@ export const getTimelineEvents = (pr: PullRequest) => {
         activity.type === 'PullRequestCommit'
       ) {
         acc[acc.length - 1].message += `; ${activity.message}`;
+        acc[acc.length - 1].date = activity.date; // Use the latest date
       } else {
         acc.push(activity);
       }
@@ -77,3 +82,21 @@ export const getTimelineEvents = (pr: PullRequest) => {
     totalEvents: pr.timelineItems.totalCount,
   };
 };
+
+function getReviewMessage(review: PullRequestReview) {
+  const commentCount = review.comments.totalCount;
+  switch (review.state) {
+    case 'APPROVED':
+      return commentCount > 0
+        ? `Approved with ${commentCount} comments`
+        : 'Approved';
+    case 'CHANGES_REQUESTED':
+      return `Changes Requested: ${review.bodyText}`;
+    case 'COMMENTED':
+      return commentCount > 0
+        ? `Left ${commentCount} comments`
+        : 'Left a comment';
+    default:
+      return 'reviewed';
+  }
+}

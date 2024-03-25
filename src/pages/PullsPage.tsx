@@ -295,6 +295,9 @@ const searchQuery = `
                 }
                 state
                 updatedAt
+                comments {
+                  totalCount
+                }
               }
               ... on PullRequestCommit {
                 commit {

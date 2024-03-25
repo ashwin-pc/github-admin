@@ -18,7 +18,8 @@ import { getTimelineEvents } from '../../utils/get_timeline_events';
 
 export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
   const { activities, totalEvents } = getTimelineEvents(pr);
-  const subset = activities.slice(0, 4);
+  // get the last 4 activities in the array
+  const subset = activities.slice(-4);
 
   return (
     <Timeline
