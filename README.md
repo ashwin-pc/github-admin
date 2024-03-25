@@ -31,7 +31,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 ### `npm run eject`
 
-### `npm run deploy -- -m "Deployment_commit_message"`
+### `npm run deploy`
 
 Used to deploy a new build to github pages. The -m flag is used to add a commit message to the deployment commit.
 
