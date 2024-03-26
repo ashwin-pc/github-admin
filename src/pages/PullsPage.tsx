@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { PullRequest } from '@octokit/graphql-schema';
 import { useGithubApiKey } from '../context';
-import {
-  Box,
-  Button,
-  UnderlineNav,
-  FormControl,
-  TextInput,
-  Spinner,
-  PageLayout,
-} from '@primer/react';
-import { SearchIcon, GitPullRequestIcon } from '@primer/octicons-react';
+import { Box, Button, UnderlineNav, Spinner, PageLayout } from '@primer/react';
+import { GitPullRequestIcon } from '@primer/octicons-react';
 import './PullsPage.css';
 import { PageHeader, Detail, PRRow, ErrorBoundary } from '../components';
-import { Link } from 'react-router-dom';
 import { Blankslate } from '@primer/react/lib-esm/drafts';
+import { SearchBar } from '../components/SearchBar';
+import { search } from '../utils/search_string';
 
 export const PRs = () => {
   const { githubApiKey, graphqlWithAuth, owner, repo } = useGithubApiKey();
@@ -25,7 +18,7 @@ export const PRs = () => {
     endCursor: '',
     hasNextPage: false,
   });
-  const [searchTerm, setSearchTerm] = useState(
+  const [searchTerm, setSearchTerm] = useState<string>(
     `repo:${owner}/${repo} is:pr is:open`,
   );
   const [isFetching, setIsFetching] = useState(false);
@@ -38,7 +31,7 @@ export const PRs = () => {
 
   useEffect(() => {
     // const savedSearchTerm = localStorage.getItem('searchTerm');
-    setSearchTerm(`repo:${owner}/${repo} is:pr is:open`);
+    setSearchTerm((q) => search.add(q, 'repo', `${owner}/${repo}`, 0));
   }, [owner, repo]);
 
   // TODO: Save the current search term to local storage whenever it changes
@@ -49,7 +42,7 @@ export const PRs = () => {
 
   const fetchPullRequests = useCallback(
     async (cursor?: string) => {
-      if (!githubApiKey || isFetching) {
+      if (!githubApiKey || isFetching || searchTerm?.length === 0) {
         return;
       }
       setIsFetching(true);
@@ -98,7 +91,7 @@ export const PRs = () => {
 
     // Disable this warning because we only want to refetch when the page loads
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchTerm]);
 
   return (
     <PageLayout
@@ -126,37 +119,11 @@ export const PRs = () => {
       </PageLayout.Header>
       <PageLayout.Content>
         <Box className="list-view grid-item">
-          <Box className="search-bar-container">
-            <FormControl>
-              <FormControl.Label>Search</FormControl.Label>
-              <FormControl.Caption>
-                Can be any query that fetches only pull requests. You can find
-                the search syntax guide{' '}
-                <Link to="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
-                  here
-                </Link>
-              </FormControl.Caption>
-              <TextInput
-                prefix="Test"
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search pull requests..."
-                width={`100%`}
-                trailingAction={
-                  <TextInput.Action
-                    onClick={() => fetchPullRequests()}
-                    icon={SearchIcon}
-                  />
-                }
-                onKeyUp={(e) => {
-                  if (e.key === 'Enter' && !isFetching && !e.shiftKey) {
-                    fetchPullRequests();
-                  }
-                }}
-              />
-            </FormControl>
-          </Box>
+          <SearchBar
+            onSearch={(query) => setSearchTerm(query)}
+            query={searchTerm}
+            disabled={isFetching}
+          />
           <Box className="pr-list grid-item">
             <ErrorBoundary>
               <>

@@ -16,6 +16,7 @@ import { Stats } from './Stats';
 import { ReviewStatus } from './ReviewStatus';
 import { getUniqueValues } from '../../utils/common';
 import { TimelineSection } from './Timeline';
+import { emitter } from '../../utils/events';
 
 interface PRRowProps {
   pr: PullRequest;
@@ -52,6 +53,12 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
             size={15}
             src={pr.author?.avatarUrl}
             aria-label={pr.author?.login}
+            onClick={(e) =>
+              emitter.emit('avatar:click', {
+                login: pr.author?.login || '',
+                type: 'author',
+              })
+            }
           />
           <Text
             as="span"
@@ -89,7 +96,17 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
                     (assignee) => assignee?.avatarUrl,
                   ),
                 ).map((url) => (
-                  <Avatar src={url} size={15} key={url} />
+                  <Avatar
+                    src={url}
+                    size={15}
+                    key={url}
+                    onClick={(e) =>
+                      emitter.emit('avatar:click', {
+                        login: pr.author?.login || '',
+                        type: 'assignee',
+                      })
+                    }
+                  />
                 ))}
               </AvatarStack>
             </Tooltip>
@@ -146,6 +163,12 @@ export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
                 color: `#${label?.color}`,
                 backgroundColor: `#${label?.color}33`,
               }}
+              onClick={(e) =>
+                emitter.emit('label:click', {
+                  label: label?.name || '',
+                  negated: e.shiftKey ? true : false,
+                })
+              }
             >
               {label?.name}
             </Label>
