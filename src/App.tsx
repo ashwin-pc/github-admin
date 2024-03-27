@@ -1,9 +1,8 @@
 import React from 'react';
 import { ThemeProvider, BaseStyles } from '@primer/react';
 import './index.css';
-import { GithubApiKeyProvider } from './context';
+import { AppProvider } from './context';
 import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { Login } from './pages/LoginPage';
 import ErrorPage from './pages/ErrorPage';
 import { PRs } from './pages/PullsPage';
 import { BASE_PATH } from './components/constants';
@@ -15,19 +14,15 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: (
-        <GithubApiKeyProvider>
+        <AppProvider>
           <Outlet />
-        </GithubApiKeyProvider>
+        </AppProvider>
       ),
       errorElement: <ErrorPage />,
       children: [
         {
           path: '/',
           element: <PRs />,
-        },
-        {
-          path: '/login',
-          element: <Login />,
         },
       ],
     },

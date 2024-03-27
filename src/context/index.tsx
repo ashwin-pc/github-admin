@@ -1,28 +1,54 @@
 import { graphql } from '@octokit/graphql';
-import React, { createContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useMemo, use } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import queryString from 'query-string';
 import { OWNER, REPO } from '../components/constants';
 
-export const GithubApiKeyContext = createContext<{
-  githubApiKey: string | null;
-  setGithubApiKey: (apiKey: string | null) => void;
-  graphqlWithAuth: typeof graphql;
+export const AppContext = createContext<{
+  isAuthenticated: boolean;
   owner: string;
   repo: string;
   setOwnerRepo: (owner: string, repo: string) => void;
 }>({
-  githubApiKey: null,
-  setGithubApiKey: (apiKey: string | null) => {},
-  graphqlWithAuth: graphql,
+  isAuthenticated: false,
   owner: OWNER,
   repo: REPO,
   setOwnerRepo: (owner: string, repo: string) => {},
 });
 
-export const GithubApiKeyProvider = (props: any) => {
+export const AppProvider = (props: any) => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      // First check if this is a redirect from the OAuth flow
+      const params = queryString.parse(location.search);
+      if (params.code) {
+        const { access_token } = await fetch('/api/auth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: params.code }),
+        }).then((res) => res.json());
+        navigate('/');
+        return;
+      }
+
+      // If not a redirect, check if the user is already authenticated
+      try {
+        const authenticated = await fetch('/api/auth/status').then(
+          async (res) => await res.text(),
+        );
+        setIsAuthenticated(true);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    })();
+  }, []);
 
   // Initialize state from localStorage
   const [githubApiKey, setGithubApiKeyState] = useState<string | null>(() => {
@@ -40,25 +66,7 @@ export const GithubApiKeyProvider = (props: any) => {
     return (params.repo as string | null) || REPO;
   });
 
-  const graphqlWithAuth = useMemo(
-    () =>
-      graphql.defaults({
-        headers: {
-          authorization: `token ${githubApiKey}`,
-        },
-      }),
-    [githubApiKey],
-  );
-
-  // Wrap the state setter function to update both state and localStorage
-  const setGithubApiKey = (apiKey: string | null) => {
-    setGithubApiKeyState(apiKey);
-    const newQuery = queryString.stringify({
-      ...queryString.parse(location.search),
-      key: apiKey,
-    });
-    navigate({ ...location, search: newQuery });
-  };
+  const graphqlWithAuth = useMemo(() => graphql.defaults({}), [githubApiKey]);
 
   const setOwnerRepo = (owner: string, repo: string) => {
     setOwner(owner);
@@ -71,18 +79,9 @@ export const GithubApiKeyProvider = (props: any) => {
     navigate({ ...location, search: newQuery });
   };
 
-  useEffect(() => {
-    if (!githubApiKey) {
-      navigate('/login');
-    }
-  }, [githubApiKey, navigate]);
-
   // listen for changes to the query params and update state if needed
   useEffect(() => {
     const params = queryString.parse(location.search);
-    if (params.key) {
-      setGithubApiKey(params.key as string);
-    }
     if (params.owner) {
       setOwner(params.owner as string);
     }
@@ -93,19 +92,17 @@ export const GithubApiKeyProvider = (props: any) => {
   }, [location.search]);
 
   return (
-    <GithubApiKeyContext.Provider
+    <AppContext.Provider
       value={{
-        githubApiKey,
-        setGithubApiKey,
-        graphqlWithAuth,
+        isAuthenticated,
         owner,
         repo,
         setOwnerRepo,
       }}
     >
       {props.children}
-    </GithubApiKeyContext.Provider>
+    </AppContext.Provider>
   );
 };
 
-export const useGithubApiKey = () => React.useContext(GithubApiKeyContext);
+export const useAppContext = () => React.useContext(AppContext);

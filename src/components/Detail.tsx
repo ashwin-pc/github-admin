@@ -12,8 +12,9 @@ import {
   Avatar,
 } from '@primer/react';
 import { useEffect, useState } from 'react';
-import { useGithubApiKey } from '../context';
+import { useAppContext } from '../context';
 import './Detail.css';
+import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 
 interface DetailProps {
   pr?: PullRequest;
@@ -21,7 +22,7 @@ interface DetailProps {
 }
 
 export const Detail = ({ pr, onClose }: DetailProps) => {
-  const { graphqlWithAuth, owner, repo } = useGithubApiKey();
+  const { owner, repo } = useAppContext();
   const [prDetail, setPrDetail] = useState<PullRequest | null>(null);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export const Detail = ({ pr, onClose }: DetailProps) => {
       }
 
       try {
-        const { repository } = await graphqlWithAuth<{
+        const { repository } = await graphqlWithProxy<{
           repository: Repository;
         }>(query, {
           owner: owner,
@@ -49,7 +50,7 @@ export const Detail = ({ pr, onClose }: DetailProps) => {
         console.error(e);
       }
     })();
-  }, [graphqlWithAuth, owner, pr, repo]);
+  }, [owner, pr, repo]);
 
   if (!pr || !prDetail) {
     return null;

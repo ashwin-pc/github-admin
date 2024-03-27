@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { PullRequest } from '@octokit/graphql-schema';
-import { useGithubApiKey } from '../context';
+import { useAppContext } from '../context';
 import { Box, Button, UnderlineNav, Spinner, PageLayout } from '@primer/react';
 import { GitPullRequestIcon } from '@primer/octicons-react';
 import './PullsPage.css';
@@ -8,9 +8,10 @@ import { PageHeader, Detail, PRRow, ErrorBoundary } from '../components';
 import { Blankslate } from '@primer/react/lib-esm/drafts';
 import { SearchBar } from '../components/SearchBar';
 import { search } from '../utils/search_string';
+import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 
 export const PRs = () => {
-  const { githubApiKey, graphqlWithAuth, owner, repo } = useGithubApiKey();
+  const { isAuthenticated, owner, repo } = useAppContext();
   const [pageInfo, setPageInfo] = useState<{
     endCursor: string;
     hasNextPage: boolean;
@@ -42,7 +43,7 @@ export const PRs = () => {
 
   const fetchPullRequests = useCallback(
     async (cursor?: string) => {
-      if (!githubApiKey || isFetching || searchTerm?.length === 0) {
+      if (!isAuthenticated || isFetching || searchTerm?.length === 0) {
         return;
       }
       setIsFetching(true);
@@ -53,7 +54,7 @@ export const PRs = () => {
       // Use the search query for GraphQL
 
       try {
-        const response = await graphqlWithAuth<{ search: any }>(searchQuery, {
+        const response = await graphqlWithProxy<{ search: any }>(searchQuery, {
           q: searchTerm,
           first: pageSize,
           after: cursor,
@@ -82,16 +83,18 @@ export const PRs = () => {
         setIsFetching(false);
       }
     },
-    [githubApiKey, isFetching, graphqlWithAuth, searchTerm],
+    [isAuthenticated, isFetching, searchTerm],
   );
 
   useEffect(() => {
     // if there is a change in the owner or repo, reset the page cursors and refetch
-    fetchPullRequests();
+    if (isAuthenticated) {
+      fetchPullRequests();
+    }
 
     // Disable this warning because we only want to refetch when the page loads
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, isAuthenticated]);
 
   return (
     <PageLayout

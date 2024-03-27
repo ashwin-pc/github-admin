@@ -12,8 +12,8 @@ import {
 import { Repository } from '@octokit/graphql-schema';
 import { MarkGithubIcon, MoonIcon, SunIcon } from '@primer/octicons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useGithubApiKey } from '../context';
-import { useStatefulNavigate } from '../utils/use_stateful_navigate';
+import { useAppContext } from '../context';
+import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 
 // Define a type for the GraphQL response
 interface GraphqlResponse {
@@ -30,15 +30,7 @@ export const PageHeader = () => {
   const { setColorMode, colorMode } = useTheme();
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [viewer, setViewer] = useState<GraphqlResponse['viewer'] | null>(null);
-  const navigate = useStatefulNavigate();
-  const {
-    graphqlWithAuth,
-    githubApiKey,
-    setGithubApiKey,
-    owner,
-    repo,
-    setOwnerRepo,
-  } = useGithubApiKey();
+  const { owner, repo, setOwnerRepo, isAuthenticated } = useAppContext();
 
   useEffect(() => {
     const fetchUserDataAndRepos = async () => {
@@ -60,7 +52,7 @@ export const PageHeader = () => {
             }
           `;
       try {
-        const response = await graphqlWithAuth<GraphqlResponse>(query);
+        const response = await graphqlWithProxy<GraphqlResponse>(query);
         if (response.viewer) {
           setViewer(response.viewer);
           setRepositories(response.viewer.repositories.nodes);
@@ -70,8 +62,10 @@ export const PageHeader = () => {
       }
     };
 
-    fetchUserDataAndRepos();
-  }, [graphqlWithAuth, githubApiKey]);
+    if (isAuthenticated) {
+      fetchUserDataAndRepos();
+    }
+  }, [isAuthenticated]);
 
   const onSelectedChange = useCallback(
     (selectedItems: any) => {
@@ -172,23 +166,29 @@ export const PageHeader = () => {
               square
               alt="@octocat"
             />{' '}
-            {viewer?.login || 'anonymous'}
+            {viewer?.login ||
+              (isAuthenticated ? 'Unauthenticated' : 'anonymous')}
           </ActionMenu.Button>
           <ActionMenu.Overlay width="medium">
             <ActionList>
-              <ActionList.Item
-                onSelect={() => navigate('/login', { key: githubApiKey })}
-              >
-                Change access key
-              </ActionList.Item>
-
-              <ActionList.Divider />
-              <ActionList.Item
-                variant="danger"
-                onSelect={() => setGithubApiKey(null)}
-              >
-                Clear access key
-              </ActionList.Item>
+              {isAuthenticated ? (
+                <ActionList.Item
+                  onClick={() => {
+                    window.location.href = `https://github.com/settings/connections/applications/${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}`;
+                  }}
+                >
+                  Revoke Access
+                </ActionList.Item>
+              ) : (
+                <ActionList.Item
+                  onClick={() => {
+                    const githubAthorizationUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&redirect_uri=${window.location.origin}&scope=repo`;
+                    window.location.href = githubAthorizationUrl;
+                  }}
+                >
+                  Login
+                </ActionList.Item>
+              )}
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
