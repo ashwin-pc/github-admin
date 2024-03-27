@@ -2,7 +2,7 @@
   "name": "github-admin",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ashwinpc.github.io/github-admin",
+  "homepage": ".",
   "dependencies": {
     "@octokit/graphql": "^7.0.2",
     "@octokit/graphql-schema": "^14.45.0",
@@ -48,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
     "prettier": "^3.1.0"
   }
 }

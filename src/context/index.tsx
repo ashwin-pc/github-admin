@@ -1,6 +1,6 @@
 import { graphql } from '@octokit/graphql';
-import React, { createContext, useState, useEffect, useMemo, use } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import queryString from 'query-string';
 import { OWNER, REPO } from '../components/constants';
 
@@ -17,24 +17,23 @@ export const AppContext = createContext<{
 });
 
 export const AppProvider = (props: any) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
       // First check if this is a redirect from the OAuth flow
-      const params = queryString.parse(location.search);
-      if (params.code) {
+      const code = searchParams.get('code');
+      if (code) {
         const { access_token } = await fetch('/api/auth/token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code: params.code }),
+          body: JSON.stringify({ code }),
         }).then((res) => res.json());
-        navigate('/');
+
         return;
       }
 
@@ -71,12 +70,8 @@ export const AppProvider = (props: any) => {
   const setOwnerRepo = (owner: string, repo: string) => {
     setOwner(owner);
     setRepo(repo);
-    const newQuery = queryString.stringify({
-      ...queryString.parse(location.search),
-      owner,
-      repo,
-    });
-    navigate({ ...location, search: newQuery });
+    // TODO: carry over the other params
+    router.push(`/?owner=${owner}&repo=${repo}`);
   };
 
   // listen for changes to the query params and update state if needed
