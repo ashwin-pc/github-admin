@@ -1,5 +1,4 @@
-import { graphql } from '@octokit/graphql';
-import React, { createContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import queryString from 'query-string';
 import { OWNER, REPO } from '../components/constants';
@@ -33,27 +32,22 @@ export const AppProvider = (props: any) => {
           },
           body: JSON.stringify({ code }),
         }).then((res) => res.json());
+        router.push('/');
 
         return;
       }
 
+      debugger;
       // If not a redirect, check if the user is already authenticated
       try {
-        const authenticated = await fetch('/api/auth/status').then(
-          async (res) => await res.text(),
-        );
-        setIsAuthenticated(true);
+        const result = await fetch('/api/auth/status');
+        const isAuthenticated = result.ok;
+        setIsAuthenticated(isAuthenticated);
       } catch (error) {
         setIsAuthenticated(false);
       }
     })();
   }, []);
-
-  // Initialize state from localStorage
-  const [githubApiKey, setGithubApiKeyState] = useState<string | null>(() => {
-    const params = queryString.parse(location.search);
-    return params.key as string | null;
-  });
 
   // Initialize owner and repo from query params
   const [owner, setOwner] = useState<string>(() => {
@@ -65,8 +59,6 @@ export const AppProvider = (props: any) => {
     return (params.repo as string | null) || REPO;
   });
 
-  const graphqlWithAuth = useMemo(() => graphql.defaults({}), [githubApiKey]);
-
   const setOwnerRepo = (owner: string, repo: string) => {
     setOwner(owner);
     setRepo(repo);
@@ -76,15 +68,14 @@ export const AppProvider = (props: any) => {
 
   // listen for changes to the query params and update state if needed
   useEffect(() => {
-    const params = queryString.parse(location.search);
-    if (params.owner) {
-      setOwner(params.owner as string);
+    if (searchParams.has('owner')) {
+      setOwner(searchParams.get('owner') as string);
     }
-    if (params.repo) {
-      setRepo(params.repo as string);
+    if (searchParams.has('repo')) {
+      setRepo(searchParams.get('repo') as string);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
+  }, [searchParams]);
 
   return (
     <AppContext.Provider

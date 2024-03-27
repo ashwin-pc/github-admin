@@ -167,7 +167,7 @@ export const PageHeader = () => {
               alt="@octocat"
             />{' '}
             {viewer?.login ||
-              (isAuthenticated ? 'Unauthenticated' : 'anonymous')}
+              (isAuthenticated ? 'anonymous' : 'Unauthenticated')}
           </ActionMenu.Button>
           <ActionMenu.Overlay width="medium">
             <ActionList>
