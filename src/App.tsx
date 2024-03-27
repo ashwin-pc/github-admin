@@ -1,8 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import { ThemeProvider, BaseStyles } from '@primer/react';
 import './index.css';
-import reportWebVitals from './reportWebVitals';
 import { GithubApiKeyProvider } from './context';
 import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Login } from './pages/LoginPage';
@@ -40,20 +38,12 @@ const router = createBrowserRouter(
   },
 );
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement,
-);
-root.render(
-  <React.StrictMode>
-    <ThemeProvider colorMode="dark">
-      <SafeBaseStyles>
-        <RouterProvider router={router} />
-      </SafeBaseStyles>
-    </ThemeProvider>
-  </React.StrictMode>,
+const App = () => (
+  <ThemeProvider colorMode="dark">
+    <SafeBaseStyles>
+      <RouterProvider router={router} />
+    </SafeBaseStyles>
+  </ThemeProvider>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+export default App;
