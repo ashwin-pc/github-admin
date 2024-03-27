@@ -8,9 +8,15 @@ interface SearchBarProps {
   query: string;
   onSearch: (searchTerm: string) => void;
   disabled?: boolean;
+  loading?: boolean;
 }
 
-export const SearchBar = ({ query, onSearch, disabled }: SearchBarProps) => {
+export const SearchBar = ({
+  query,
+  onSearch,
+  disabled,
+  loading,
+}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState(query);
   const handleSearch = () => {
     onSearch(searchTerm);
@@ -59,6 +65,7 @@ export const SearchBar = ({ query, onSearch, disabled }: SearchBarProps) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search pull requests..."
           width={`100%`}
+          loading={loading}
           disabled={disabled}
           trailingAction={
             <TextInput.Action

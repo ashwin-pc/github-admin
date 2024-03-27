@@ -54,15 +54,27 @@ export const PRs = () => {
       // Use the search query for GraphQL
 
       try {
-        const response = await graphqlWithProxy<{ search: any }>(searchQuery, {
+        // Start the quick query
+        const responsePromise = graphqlWithProxy<{ search: any }>(quickQuery, {
           q: searchTerm,
           first: pageSize,
           after: cursor,
         });
 
-        setIsFetching(false);
+        // Get detailed data
+        const detailedResponsePromise = graphqlWithProxy<{ search: any }>(
+          detailedQuery,
+          {
+            q: searchTerm,
+            first: pageSize,
+            after: cursor,
+          },
+        );
+
+        const response = await responsePromise;
 
         if (!response.search || !response.search.nodes) {
+          setIsFetching(false);
           return;
         }
 
@@ -77,7 +89,25 @@ export const PRs = () => {
         const totalPRs = response.search.issueCount || 0;
         setTotalPRs(totalPRs);
 
+        const detailedResponse = await detailedResponsePromise;
+        if (!detailedResponse.search || !detailedResponse.search.nodes) {
+          setIsFetching(false);
+          return;
+        }
+
+        const detailedPullRequests = detailedResponse.search.nodes.filter(
+          (pr: any): pr is PullRequest =>
+            pr !== null && pr.__typename === 'PullRequest',
+        );
+
+        setPullRequests((prev) => {
+          // remove the last page of PRs and add the detailed PRs instead
+          const newPRs = prev.slice(0, prev.length - newPullRequests.length);
+          return [...newPRs, ...detailedPullRequests];
+        });
+
         setPageInfo(response.search.pageInfo);
+        setIsFetching(false);
       } catch (error) {
         console.error('Error fetching pull requests:', error);
         setIsFetching(false);
@@ -125,12 +155,12 @@ export const PRs = () => {
           <SearchBar
             onSearch={(query) => setSearchTerm(query)}
             query={searchTerm}
-            disabled={isFetching}
+            loading={isFetching}
           />
           <Box className="pr-list grid-item">
             <ErrorBoundary>
               <>
-                {isFetching ? (
+                {isFetching && pullRequests.length === 0 ? (
                   <Blankslate>
                     <Blankslate.Visual>
                       <Spinner />
@@ -178,7 +208,37 @@ export const PRs = () => {
   );
 };
 
-const searchQuery = `
+const quickQuery = `
+  query SearchPullRequests($q: String!, $first: Int!, $after: String) {
+    search(query: $q, type: ISSUE, first: $first, after: $after) {
+      issueCount
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      nodes {
+        __typename
+        ... on PullRequest {
+          id
+          number
+          mergeable
+          merged
+          title
+          url
+          createdAt
+          lastEditedAt
+          author {
+            login
+            avatarUrl
+          }
+          
+        }
+      }
+    }
+  }
+`;
+
+const detailedQuery = `
   query SearchPullRequests($q: String!, $first: Int!, $after: String) {
     search(query: $q, type: ISSUE, first: $first, after: $after) {
       issueCount

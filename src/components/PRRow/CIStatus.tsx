@@ -9,8 +9,19 @@ import { CheckRun, PullRequest } from '@octokit/graphql-schema';
 import { StatusBadge } from './StatusBadge';
 import { Tooltip } from '../Tooltip';
 import { getUniqueValues, groupBy } from '../../utils/common';
+import { Spinner } from '@primer/react';
 
 export const CIStatus = ({ pr }: { pr: PullRequest }) => {
+  if (!pr.commits) {
+    const spinner = () => <Spinner size="small" />;
+    return (
+      <StatusBadge
+        status="Loading"
+        color="neutral.fg"
+        leadingVisual={spinner}
+      />
+    );
+  }
   const status = getCIResult(pr);
 
   const badge = (

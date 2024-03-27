@@ -9,6 +9,7 @@ import {
   Box,
   Octicon,
   RelativeTime,
+  Spinner,
   Timeline,
   Token,
   Truncate,
@@ -20,6 +21,16 @@ export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
   const { activities, totalEvents } = getTimelineEvents(pr);
   // get the last 4 activities in the array
   const subset = activities.slice(-4);
+
+  if (!pr.comments) {
+    return (
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Spinner size="small" />
+      </Box>
+    );
+  }
 
   return (
     <Timeline
@@ -59,7 +70,7 @@ export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
           backgroundColor: 'canvas.default',
         }}
       >
-        {pr.comments.totalCount > 0 && (
+        {pr.comments?.totalCount > 0 && (
           <Tooltip
             aria-label={`${pr.comments.totalCount} comments`}
             direction="w"
