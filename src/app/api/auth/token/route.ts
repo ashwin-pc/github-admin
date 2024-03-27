@@ -31,6 +31,12 @@ export async function POST(request: Request) {
         },
       });
     } else {
+      console.error(
+        'Failed to exchange code for access token',
+        data,
+        process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID,
+        process.env.GITHUB_CLIENT_SECRET,
+      );
       return new Response(JSON.stringify(data), { status: 400 });
     }
   } catch (error) {
