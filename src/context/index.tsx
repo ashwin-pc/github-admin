@@ -32,13 +32,9 @@ export const AppProvider = (props: any) => {
           },
           body: JSON.stringify({ code }),
         }).then((res) => res.json());
-        router.push('/');
-
-        return;
       }
 
-      debugger;
-      // If not a redirect, check if the user is already authenticated
+      // Check if the user is already authenticated
       try {
         const result = await fetch('/api/auth/status');
         const isAuthenticated = result.ok;
