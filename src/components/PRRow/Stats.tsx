@@ -90,17 +90,14 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
         <Stat
           icon={CommentIcon}
           text={
-            <Box sx={{ display: 'inline-flex' }}>
-              <Text
-                as="span"
-                color={getColorForNumber(
-                  unresolvedComments.length,
-                  unresolvedRanges,
-                )}
-              >
-                Unresolved comments: {unresolvedComments.length}
-              </Text>
-              <Text as="span"> from </Text>
+            <Text
+              as="span"
+              color={getColorForNumber(
+                unresolvedComments.length,
+                unresolvedRanges,
+              )}
+            >
+              Open comments: {unresolvedComments.length} from
               <Tooltip
                 aria-label={`${getUniqueValues(
                   unresolvedComments.map((c) => c.author?.login),
@@ -115,7 +112,7 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
                   ))}
                 </AvatarStack>
               </Tooltip>
-            </Box>
+            </Text>
           }
         />
       )}
@@ -141,6 +138,8 @@ const Stat = ({
 }) => (
   <Box className="stat">
     <Octicon icon={icon} size={12} />
-    <Text as="span">{text}</Text>
+    <Text as="span" sx={{ paddingLeft: '5px' }}>
+      {text}
+    </Text>
   </Box>
 );

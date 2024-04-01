@@ -68,6 +68,8 @@ export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
           right: '5px',
           bottom: '5px',
           backgroundColor: 'canvas.default',
+          display: 'flex',
+          gap: '5px',
         }}
       >
         {pr.comments?.totalCount > 0 && (

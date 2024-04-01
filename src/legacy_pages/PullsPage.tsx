@@ -231,7 +231,7 @@ const quickQuery = `
             login
             avatarUrl
           }
-          
+          isDraft
         }
       }
     }
