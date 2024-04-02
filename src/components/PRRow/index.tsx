@@ -7,17 +7,12 @@ import { Info } from './Info';
 
 interface PRRowProps {
   pr: PullRequest;
-  selectedPR?: PullRequest;
-  setSelectedPR: React.Dispatch<React.SetStateAction<PullRequest | undefined>>;
 }
 
-export const PRRow = ({ pr, selectedPR, setSelectedPR }: PRRowProps) => {
+export const PRRow = ({ pr }: PRRowProps) => {
   return (
     <Box
-      className={`row ${selectedPR?.id === pr.id ? 'selected' : ''}`}
-      onClick={() =>
-        setSelectedPR((currentPr) => (currentPr === pr ? undefined : pr))
-      }
+      className={`row`}
       sx={{
         border: '1px solid',
         borderColor: 'border.subtle',

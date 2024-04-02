@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
 import { PullRequest } from '@octokit/graphql-schema';
-import { useAppContext } from '../context';
 import { Box, Button, UnderlineNav, Spinner, PageLayout } from '@primer/react';
 import { GitPullRequestIcon } from '@primer/octicons-react';
 import './PullsPage.css';
-import { PageHeader, Detail, PRRow, ErrorBoundary } from '../components';
+import { PageHeader, PRRow, ErrorBoundary } from '../components';
 import { Blankslate } from '@primer/react/lib-esm/drafts';
 import { SearchBar } from '../components/SearchBar';
-import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 import { useSearch } from 'src/hooks/useSearch';
 
 export const PRs = () => {
@@ -26,9 +23,6 @@ export const PRs = () => {
       first: 20,
     },
     quickQuery,
-  );
-  const [selectedPR, setSelectedPR] = useState<PullRequest | undefined>(
-    pullRequests[0],
   );
 
   return (
@@ -80,12 +74,7 @@ export const PRs = () => {
                   </Blankslate>
                 ) : (
                   pullRequests.map((pr, index) => (
-                    <PRRow
-                      key={`list-${index}`}
-                      pr={pr}
-                      setSelectedPR={setSelectedPR}
-                      selectedPR={selectedPR}
-                    />
+                    <PRRow key={`list-${index}`} pr={pr} />
                   ))
                 )}
               </>
@@ -104,9 +93,9 @@ export const PRs = () => {
           </Box>
         </Box>
       </PageLayout.Content>
-      <PageLayout.Pane hidden={!selectedPR} resizable sticky>
+      <PageLayout.Pane hidden={true} resizable sticky>
         <Box className="details-view grid-item">
-          <Detail pr={selectedPR} onClose={() => setSelectedPR(undefined)} />
+          {/* Resizeable pane here available for future use */}
         </Box>
       </PageLayout.Pane>
     </PageLayout>
