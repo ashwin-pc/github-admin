@@ -7,7 +7,12 @@ import {
   Text,
 } from '@primer/react';
 
-import { ClockIcon, CommentIcon, FileDiffIcon } from '@primer/octicons-react';
+import {
+  ClockIcon,
+  CommentIcon,
+  FileDiffIcon,
+  PencilIcon,
+} from '@primer/octicons-react';
 import {
   PullRequest,
   PullRequestReview,
@@ -74,17 +79,21 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
       <Stat
         icon={ClockIcon}
         text={
-          <>
+          <Text>
             Opened: <RelativeTime datetime={pr.createdAt} />
-            {pr.lastEditedAt && (
-              <>
-                {' '}
-                | Updated: <RelativeTime datetime={pr.lastEditedAt} />{' '}
-              </>
-            )}
-          </>
+          </Text>
         }
       />
+      {pr.lastEditedAt && (
+        <Stat
+          icon={PencilIcon}
+          text={
+            <Text>
+              Updated: <RelativeTime datetime={pr.lastEditedAt} />
+            </Text>
+          }
+        />
+      )}
       {/* Unresolved comments */}
       {unresolvedComments && unresolvedComments.length > 0 && (
         <Stat

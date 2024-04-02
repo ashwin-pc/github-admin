@@ -11,115 +11,25 @@ import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 import { useSearch } from 'src/hooks/useSearch';
 
 export const PRs = () => {
-  const { isAuthenticated } = useAppContext();
-  const [pageInfo, setPageInfo] = useState<{
-    endCursor: string;
-    hasNextPage: boolean;
-  }>({
-    endCursor: '',
-    hasNextPage: false,
-  });
-  const [searchTerm, setSearchTerm] = useSearch(
+  const {
+    loading,
+    results: pullRequests,
+    searchTerm,
+    updateSearchTerm,
+    hasMore,
+    loadMoreData,
+    totalResults: totalPRs,
+  } = useSearch<PullRequest>(
     `repo:opensearch-project/OpenSearch-Dashboards is:pr is:open`,
+    query,
+    {
+      first: 20,
+    },
+    quickQuery,
   );
-  const [isFetching, setIsFetching] = useState(false);
-  const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
-  const [totalPRs, setTotalPRs] = useState(0);
   const [selectedPR, setSelectedPR] = useState<PullRequest | undefined>(
     pullRequests[0],
   );
-  const pageSize = 25;
-
-  // TODO: Save the current search term to local storage whenever it changes
-  // useEffect(() => {
-  //   // Save the current search term to local storage whenever it changes
-  //   localStorage.setItem('searchTerm', searchTerm);
-  // }, [searchTerm]);
-
-  const fetchPullRequests = useCallback(
-    async (cursor?: string) => {
-      if (!isAuthenticated || isFetching || searchTerm?.length === 0) {
-        return;
-      }
-      setIsFetching(true);
-      if (!cursor) {
-        setPullRequests([]);
-      }
-
-      // Use the search query for GraphQL
-
-      try {
-        // Start the quick query
-        const responsePromise = graphqlWithProxy<{ search: any }>(quickQuery, {
-          q: searchTerm,
-          first: pageSize,
-          after: cursor,
-        });
-
-        // Get detailed data
-        const detailedResponsePromise = graphqlWithProxy<{ search: any }>(
-          detailedQuery,
-          {
-            q: searchTerm,
-            first: pageSize,
-            after: cursor,
-          },
-        );
-
-        const response = await responsePromise;
-
-        if (!response.search || !response.search.nodes) {
-          setIsFetching(false);
-          return;
-        }
-
-        const newPullRequests = response.search.nodes.filter(
-          (pr: any): pr is PullRequest =>
-            pr !== null && pr.__typename === 'PullRequest',
-        );
-
-        setPullRequests((prev) => [...prev, ...newPullRequests]);
-
-        // Since this is a simplified approach, totalCount and pagination may need adjustment
-        const totalPRs = response.search.issueCount || 0;
-        setTotalPRs(totalPRs);
-
-        const detailedResponse = await detailedResponsePromise;
-        if (!detailedResponse.search || !detailedResponse.search.nodes) {
-          setIsFetching(false);
-          return;
-        }
-
-        const detailedPullRequests = detailedResponse.search.nodes.filter(
-          (pr: any): pr is PullRequest =>
-            pr !== null && pr.__typename === 'PullRequest',
-        );
-
-        setPullRequests((prev) => {
-          // remove the last page of PRs and add the detailed PRs instead
-          const newPRs = prev.slice(0, prev.length - newPullRequests.length);
-          return [...newPRs, ...detailedPullRequests];
-        });
-
-        setPageInfo(response.search.pageInfo);
-        setIsFetching(false);
-      } catch (error) {
-        console.error('Error fetching pull requests:', error);
-        setIsFetching(false);
-      }
-    },
-    [isAuthenticated, isFetching, searchTerm],
-  );
-
-  useEffect(() => {
-    // if there is a change in the owner or repo, reset the page cursors and refetch
-    if (isAuthenticated) {
-      fetchPullRequests();
-    }
-
-    // Disable this warning because we only want to refetch when the page loads
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, isAuthenticated]);
 
   return (
     <PageLayout
@@ -148,14 +58,14 @@ export const PRs = () => {
       <PageLayout.Content>
         <Box className="list-view grid-item">
           <SearchBar
-            onSearch={(query) => setSearchTerm(query)}
+            onSearch={(query) => updateSearchTerm(query)}
             query={searchTerm}
-            loading={isFetching}
+            loading={loading}
           />
           <Box className="pr-list grid-item">
             <ErrorBoundary>
               <>
-                {isFetching && pullRequests.length === 0 ? (
+                {loading && pullRequests.length === 0 ? (
                   <Blankslate>
                     <Blankslate.Visual>
                       <Spinner />
@@ -182,13 +92,13 @@ export const PRs = () => {
             </ErrorBoundary>
           </Box>
           <Box className="load-more-container">
-            {pageInfo.hasNextPage && !isFetching && (
+            {hasMore && (
               <Button
                 variant="invisible"
-                disabled={isFetching}
-                onClick={() => fetchPullRequests(pageInfo.endCursor)}
+                disabled={loading}
+                onClick={() => loadMoreData()}
               >
-                {isFetching ? 'Loading...' : 'Load More'}
+                {loading ? 'Loading...' : 'Load More'}
               </Button>
             )}
           </Box>
@@ -202,7 +112,6 @@ export const PRs = () => {
     </PageLayout>
   );
 };
-
 const quickQuery = `
   query SearchPullRequests($q: String!, $first: Int!, $after: String) {
     search(query: $q, type: ISSUE, first: $first, after: $after) {
@@ -233,7 +142,7 @@ const quickQuery = `
   }
 `;
 
-const detailedQuery = `
+const query = `
   query SearchPullRequests($q: String!, $first: Int!, $after: String) {
     search(query: $q, type: ISSUE, first: $first, after: $after) {
       issueCount
