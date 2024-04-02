@@ -9,8 +9,19 @@ import { CheckRun, PullRequest } from '@octokit/graphql-schema';
 import { StatusBadge } from './StatusBadge';
 import { Tooltip } from '../Tooltip';
 import { getUniqueValues, groupBy } from '../../utils/common';
+import { Spinner } from '@primer/react';
 
 export const CIStatus = ({ pr }: { pr: PullRequest }) => {
+  if (!pr.commits) {
+    const spinner = () => <Spinner size="small" />;
+    return (
+      <StatusBadge
+        status="Loading"
+        color="neutral.fg"
+        leadingVisual={spinner}
+      />
+    );
+  }
   const status = getCIResult(pr);
 
   const badge = (
@@ -49,10 +60,11 @@ const getCIResult = (pr: PullRequest): CIResult => {
       };
     case 'FAILURE':
       return {
-        text:
-          groupByConclusion?.FAILURE?.length === 1
+        text: groupByConclusion?.FAILURE
+          ? groupByConclusion?.FAILURE?.length === 1
             ? `${groupByConclusion?.FAILURE[0].name} failed`
-            : `${groupByConclusion?.FAILURE?.length} Failures`,
+            : `${groupByConclusion?.FAILURE?.length} Failures`
+          : 'Unknown failure. Checks pass',
         color: 'danger.fg',
         icon: XIcon,
         reason: groupByConclusion?.FAILURE?.map((context) => context.name).join(

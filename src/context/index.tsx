@@ -1,111 +1,87 @@
-import { graphql } from '@octokit/graphql';
-import React, { createContext, useState, useEffect, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import queryString from 'query-string';
-import { OWNER, REPO } from '../components/constants';
+import React, { createContext, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 
-export const GithubApiKeyContext = createContext<{
-  githubApiKey: string | null;
-  setGithubApiKey: (apiKey: string | null) => void;
-  graphqlWithAuth: typeof graphql;
-  owner: string;
-  repo: string;
-  setOwnerRepo: (owner: string, repo: string) => void;
+interface GraphqlResponse {
+  viewer: {
+    avatarUrl: string;
+    login: string;
+  };
+}
+
+export const AppContext = createContext<{
+  isAuthenticated: boolean;
+  viewer?: GraphqlResponse['viewer'];
 }>({
-  githubApiKey: null,
-  setGithubApiKey: (apiKey: string | null) => {},
-  graphqlWithAuth: graphql,
-  owner: OWNER,
-  repo: REPO,
-  setOwnerRepo: (owner: string, repo: string) => {},
+  isAuthenticated: false,
 });
 
-export const GithubApiKeyProvider = (props: any) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Initialize state from localStorage
-  const [githubApiKey, setGithubApiKeyState] = useState<string | null>(() => {
-    const params = queryString.parse(location.search);
-    return params.key as string | null;
-  });
-
-  // Initialize owner and repo from query params
-  const [owner, setOwner] = useState<string>(() => {
-    const params = queryString.parse(location.search);
-    return (params.owner as string | null) || OWNER;
-  });
-  const [repo, setRepo] = useState<string>(() => {
-    const params = queryString.parse(location.search);
-    return (params.repo as string | null) || REPO;
-  });
-
-  const graphqlWithAuth = useMemo(
-    () =>
-      graphql.defaults({
-        headers: {
-          authorization: `token ${githubApiKey}`,
-        },
-      }),
-    [githubApiKey],
-  );
-
-  // Wrap the state setter function to update both state and localStorage
-  const setGithubApiKey = (apiKey: string | null) => {
-    setGithubApiKeyState(apiKey);
-    const newQuery = queryString.stringify({
-      ...queryString.parse(location.search),
-      key: apiKey,
-    });
-    navigate({ ...location, search: newQuery });
-  };
-
-  const setOwnerRepo = (owner: string, repo: string) => {
-    setOwner(owner);
-    setRepo(repo);
-    const newQuery = queryString.stringify({
-      ...queryString.parse(location.search),
-      owner,
-      repo,
-    });
-    navigate({ ...location, search: newQuery });
-  };
+export const AppProvider = (props: any) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [viewer, setViewer] = useState<GraphqlResponse['viewer']>();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!githubApiKey) {
-      navigate('/login');
-    }
-  }, [githubApiKey, navigate]);
+    (async () => {
+      // First check if this is a redirect from the OAuth flow
+      const code = searchParams.get('code');
+      if (code) {
+        const { access_token } = await fetch('/api/auth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code }),
+        }).then((res) => res.json());
+      }
 
-  // listen for changes to the query params and update state if needed
+      // Check if the user is already authenticated
+      try {
+        const result = await fetch('/api/auth/status');
+        const isAuthenticated = result.ok;
+        setIsAuthenticated(isAuthenticated);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    })();
+  }, []);
+
   useEffect(() => {
-    const params = queryString.parse(location.search);
-    if (params.key) {
-      setGithubApiKey(params.key as string);
+    const fetchUserData = async () => {
+      const query = `
+            query {
+              viewer {
+                avatarUrl
+                login
+              }
+            }
+          `;
+      try {
+        const response = await graphqlWithProxy<GraphqlResponse>(query);
+        if (response.viewer) {
+          setViewer(response.viewer);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUserData();
     }
-    if (params.owner) {
-      setOwner(params.owner as string);
-    }
-    if (params.repo) {
-      setRepo(params.repo as string);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
+  }, [isAuthenticated]);
 
   return (
-    <GithubApiKeyContext.Provider
+    <AppContext.Provider
       value={{
-        githubApiKey,
-        setGithubApiKey,
-        graphqlWithAuth,
-        owner,
-        repo,
-        setOwnerRepo,
+        isAuthenticated,
+        viewer,
       }}
     >
       {props.children}
-    </GithubApiKeyContext.Provider>
+    </AppContext.Provider>
   );
 };
 
-export const useGithubApiKey = () => React.useContext(GithubApiKeyContext);
+export const useAppContext = () => React.useContext(AppContext);

@@ -15,7 +15,7 @@ export interface Activity {
 }
 
 export const getTimelineEvents = (pr: PullRequest) => {
-  const events = pr.timelineItems.nodes || [];
+  const events = pr.timelineItems?.nodes || [];
   const filteredEvents = events.filter(Boolean) as PullRequestTimelineItems[];
 
   const activities: Activity[] = filteredEvents.map((item): Activity => {
@@ -61,25 +61,27 @@ export const getTimelineEvents = (pr: PullRequest) => {
     }
   });
 
-  const groupedActivities = activities.reduce(
-    (acc, activity) => {
-      if (
-        acc[acc.length - 1].type === activity.type &&
-        activity.type === 'PullRequestCommit'
-      ) {
-        acc[acc.length - 1].message += `; ${activity.message}`;
-        acc[acc.length - 1].date = activity.date; // Use the latest date
-      } else {
-        acc.push(activity);
-      }
-      return acc;
-    },
-    [activities[0]],
-  );
+  const groupedActivities = activities
+    .reduce(
+      (acc, activity) => {
+        if (
+          acc[acc.length - 1].type === activity.type &&
+          activity.type === 'PullRequestCommit'
+        ) {
+          acc[acc.length - 1].message += `; ${activity.message}`;
+          acc[acc.length - 1].date = activity.date; // Use the latest date
+        } else {
+          acc.push(activity);
+        }
+        return acc;
+      },
+      [activities[0]],
+    )
+    .filter(Boolean) as Activity[];
 
   return {
     activities: groupedActivities,
-    totalEvents: pr.timelineItems.totalCount,
+    totalEvents: pr.timelineItems?.totalCount,
   };
 };
 

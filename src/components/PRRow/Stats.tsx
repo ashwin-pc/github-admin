@@ -7,7 +7,12 @@ import {
   Text,
 } from '@primer/react';
 
-import { ClockIcon, CommentIcon, FileDiffIcon } from '@primer/octicons-react';
+import {
+  ClockIcon,
+  CommentIcon,
+  FileDiffIcon,
+  PencilIcon,
+} from '@primer/octicons-react';
 import {
   PullRequest,
   PullRequestReview,
@@ -74,33 +79,34 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
       <Stat
         icon={ClockIcon}
         text={
-          <>
+          <Text>
             Opened: <RelativeTime datetime={pr.createdAt} />
-            {pr.lastEditedAt && (
-              <>
-                {' '}
-                | Updated: <RelativeTime datetime={pr.lastEditedAt} />{' '}
-              </>
-            )}
-          </>
+          </Text>
         }
       />
+      {pr.lastEditedAt && (
+        <Stat
+          icon={PencilIcon}
+          text={
+            <Text>
+              Updated: <RelativeTime datetime={pr.lastEditedAt} />
+            </Text>
+          }
+        />
+      )}
       {/* Unresolved comments */}
       {unresolvedComments && unresolvedComments.length > 0 && (
         <Stat
           icon={CommentIcon}
           text={
-            <Box sx={{ display: 'inline-flex' }}>
-              <Text
-                as="span"
-                color={getColorForNumber(
-                  unresolvedComments.length,
-                  unresolvedRanges,
-                )}
-              >
-                Unresolved comments: {unresolvedComments.length}
-              </Text>
-              <Text as="span"> from </Text>
+            <Text
+              as="span"
+              color={getColorForNumber(
+                unresolvedComments.length,
+                unresolvedRanges,
+              )}
+            >
+              Open comments: {unresolvedComments.length} from
               <Tooltip
                 aria-label={`${getUniqueValues(
                   unresolvedComments.map((c) => c.author?.login),
@@ -115,7 +121,7 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
                   ))}
                 </AvatarStack>
               </Tooltip>
-            </Box>
+            </Text>
           }
         />
       )}
@@ -141,6 +147,8 @@ const Stat = ({
 }) => (
   <Box className="stat">
     <Octicon icon={icon} size={12} />
-    <Text as="span">{text}</Text>
+    <Text as="span" sx={{ paddingLeft: '5px' }}>
+      {text}
+    </Text>
   </Box>
 );

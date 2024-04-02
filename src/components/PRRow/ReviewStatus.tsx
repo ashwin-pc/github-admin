@@ -41,7 +41,7 @@ export const ReviewStatus = ({ pr }: { pr: PullRequest }) => {
         leadingVisual={() => (
           <AvatarStack>
             {approvedBy.map((url) => (
-              <Avatar src={url} size={15} />
+              <Avatar src={url} size={15} key={url} />
             ))}
           </AvatarStack>
         )}
