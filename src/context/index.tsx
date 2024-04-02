@@ -1,23 +1,25 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import queryString from 'query-string';
-import { OWNER, REPO } from '../components/constants';
+import { graphqlWithProxy } from 'src/utils/graphql_proxy';
+
+interface GraphqlResponse {
+  viewer: {
+    avatarUrl: string;
+    login: string;
+  };
+}
 
 export const AppContext = createContext<{
   isAuthenticated: boolean;
-  owner: string;
-  repo: string;
-  setOwnerRepo: (owner: string, repo: string) => void;
+  viewer?: GraphqlResponse['viewer'];
 }>({
   isAuthenticated: false,
-  owner: OWNER,
-  repo: REPO,
-  setOwnerRepo: (owner: string, repo: string) => {},
 });
 
 export const AppProvider = (props: any) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [viewer, setViewer] = useState<GraphqlResponse['viewer']>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
@@ -45,41 +47,36 @@ export const AppProvider = (props: any) => {
     })();
   }, []);
 
-  // Initialize owner and repo from query params
-  const [owner, setOwner] = useState<string>(() => {
-    const params = queryString.parse(location.search);
-    return (params.owner as string | null) || OWNER;
-  });
-  const [repo, setRepo] = useState<string>(() => {
-    const params = queryString.parse(location.search);
-    return (params.repo as string | null) || REPO;
-  });
-
-  const setOwnerRepo = (owner: string, repo: string) => {
-    setOwner(owner);
-    setRepo(repo);
-    // TODO: carry over the other params
-    router.push(`/?owner=${owner}&repo=${repo}`);
-  };
-
-  // listen for changes to the query params and update state if needed
   useEffect(() => {
-    if (searchParams.has('owner')) {
-      setOwner(searchParams.get('owner') as string);
+    const fetchUserData = async () => {
+      const query = `
+            query {
+              viewer {
+                avatarUrl
+                login
+              }
+            }
+          `;
+      try {
+        const response = await graphqlWithProxy<GraphqlResponse>(query);
+        if (response.viewer) {
+          setViewer(response.viewer);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUserData();
     }
-    if (searchParams.has('repo')) {
-      setRepo(searchParams.get('repo') as string);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [isAuthenticated]);
 
   return (
     <AppContext.Provider
       value={{
         isAuthenticated,
-        owner,
-        repo,
-        setOwnerRepo,
+        viewer,
       }}
     >
       {props.children}

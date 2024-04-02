@@ -7,12 +7,11 @@ import './PullsPage.css';
 import { PageHeader, Detail, PRRow, ErrorBoundary } from '../components';
 import { Blankslate } from '@primer/react/lib-esm/drafts';
 import { SearchBar } from '../components/SearchBar';
-import { search } from '../utils/search_string';
 import { graphqlWithProxy } from 'src/utils/graphql_proxy';
 import { useSearch } from 'src/hooks/useSearch';
 
 export const PRs = () => {
-  const { isAuthenticated, owner, repo } = useAppContext();
+  const { isAuthenticated } = useAppContext();
   const [pageInfo, setPageInfo] = useState<{
     endCursor: string;
     hasNextPage: boolean;
@@ -21,7 +20,7 @@ export const PRs = () => {
     hasNextPage: false,
   });
   const [searchTerm, setSearchTerm] = useSearch(
-    `repo:${owner}/${repo} is:pr is:open`,
+    `repo:opensearch-project/OpenSearch-Dashboards is:pr is:open`,
   );
   const [isFetching, setIsFetching] = useState(false);
   const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
@@ -30,10 +29,6 @@ export const PRs = () => {
     pullRequests[0],
   );
   const pageSize = 25;
-
-  useEffect(() => {
-    setSearchTerm((q) => search.add(q, 'repo', `${owner}/${repo}`, 0));
-  }, [owner, repo]);
 
   // TODO: Save the current search term to local storage whenever it changes
   // useEffect(() => {

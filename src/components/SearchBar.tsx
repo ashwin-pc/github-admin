@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { SearchIcon } from '@primer/octicons-react';
 import { emitter } from '../utils/events';
 import { search } from '../utils/search_string';
+import { useAppContext } from 'src/context';
 
 interface SearchBarProps {
   query: string;
@@ -17,6 +18,7 @@ export const SearchBar = ({
   disabled,
   loading,
 }: SearchBarProps) => {
+  const { viewer } = useAppContext();
   const [searchTerm, setSearchTerm] = useState(query);
   const handleSearch = () => {
     onSearch(searchTerm);
@@ -57,6 +59,19 @@ export const SearchBar = ({
           <Link href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
             here
           </Link>
+          {viewer?.login && (
+            <>
+              . Filter PRs that are{' '}
+              <Link
+                onClick={() => {
+                  onSearch(search.add(searchTerm, 'assignee', viewer.login));
+                }}
+                sx={{ cursor: 'pointer' }}
+              >
+                assigned to me
+              </Link>
+            </>
+          )}
         </FormControl.Caption>
         <TextInput
           prefix="Test"
