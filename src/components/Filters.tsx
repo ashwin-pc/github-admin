@@ -25,6 +25,9 @@ export const Filters = ({
           <ActionList.Item onClick={() => onFilter('sort', 'created-asc')}>
             Sort by oldest
           </ActionList.Item>
+          <ActionList.Item onClick={() => onFilter('-is', 'draft')}>
+            Skip drafts
+          </ActionList.Item>
         </ActionList>
       </ActionMenu.Overlay>
     </ActionMenu>

@@ -41,6 +41,7 @@
 .timeline,
 .stats {
   padding: 5px;
+  z-index: 0;
 }
 
 @media (max-width: 768px) {
