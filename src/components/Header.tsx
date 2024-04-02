@@ -18,13 +18,15 @@ export const PageHeader = () => {
   return (
     <Header className="header grid-item">
       <Header.Item>
-        <Octicon
-          icon={MarkGithubIcon}
-          sx={{
-            mr: 2,
-          }}
-        />
-        Github Admin
+        <Header.Link href="https://github.com/ashwin-pc/github-admin">
+          <Octicon
+            icon={MarkGithubIcon}
+            sx={{
+              mr: 2,
+            }}
+          />
+          Github Admin
+        </Header.Link>
       </Header.Item>
       <Header.Item full></Header.Item>
       {/* Dark mode toggle */}

@@ -4,6 +4,7 @@ import { SearchIcon } from '@primer/octicons-react';
 import { emitter } from '../utils/events';
 import { search } from '../utils/search_string';
 import { useAppContext } from 'src/context';
+import { Filters } from './Filters';
 
 interface SearchBarProps {
   query: string;
@@ -23,6 +24,8 @@ export const SearchBar = ({
   const handleSearch = () => {
     onSearch(searchTerm);
   };
+
+  const repo = search.get(searchTerm, 'repo');
 
   useEffect(() => {
     setSearchTerm(query);
@@ -49,51 +52,67 @@ export const SearchBar = ({
     };
   }, [searchTerm, onSearch]);
 
+  const handleFilter = (key: string, value: string) => {
+    const newQuery = search.add(searchTerm, key, value);
+    setSearchTerm(newQuery);
+    onSearch(newQuery);
+  };
+
   return (
     <Box className="search-bar-container">
       <FormControl>
         <FormControl.Label>Search</FormControl.Label>
         <FormControl.Caption>
-          Can be any query that fetches only pull requests. You can find the
-          search syntax guide{' '}
-          <Link href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
-            here
-          </Link>
-          {viewer?.login && (
+          Search for pull requests
+          {repo && (
             <>
-              . Filter PRs that are{' '}
+              {' '}
+              in{' '}
               <Link
-                onClick={() => {
-                  onSearch(search.add(searchTerm, 'assignee', viewer.login));
-                }}
-                sx={{ cursor: 'pointer' }}
+                href={`https://github.com/${repo}/pulls/?q=${search.remove(
+                  searchTerm,
+                  'repo',
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                assigned to me
+                {repo}
               </Link>
             </>
           )}
+          .{' '}
+          <Link href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests">
+            Here's
+          </Link>{' '}
+          a guide for the search syntax.
         </FormControl.Caption>
-        <TextInput
-          prefix="Test"
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search pull requests..."
-          width={`100%`}
-          loading={loading}
-          disabled={disabled}
-          trailingAction={
-            <TextInput.Action
-              onClick={() => handleSearch()}
-              icon={SearchIcon}
-            />
-          }
-          onKeyUp={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              handleSearch();
+        <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+          <Filters onFilter={handleFilter} />
+          <TextInput
+            prefix="Test"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search pull requests..."
+            width={`100%`}
+            loading={loading}
+            disabled={disabled}
+            trailingAction={
+              <TextInput.Action
+                onClick={() => handleSearch()}
+                icon={SearchIcon}
+              />
             }
-          }}
-        />
+            onKeyUp={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                handleSearch();
+              }
+            }}
+            sx={{
+              paddingLeft: 0,
+            }}
+          />
+        </Box>
       </FormControl>
     </Box>
   );
