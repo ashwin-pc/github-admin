@@ -9,6 +9,7 @@ import { Blankslate } from '@primer/react/lib-esm/drafts';
 import { SearchBar } from '../components/SearchBar';
 import { search } from '../utils/search_string';
 import { graphqlWithProxy } from 'src/utils/graphql_proxy';
+import { useSearch } from 'src/hooks/useSearch';
 
 export const PRs = () => {
   const { isAuthenticated, owner, repo } = useAppContext();
@@ -19,7 +20,7 @@ export const PRs = () => {
     endCursor: '',
     hasNextPage: false,
   });
-  const [searchTerm, setSearchTerm] = useState<string>(
+  const [searchTerm, setSearchTerm] = useSearch(
     `repo:${owner}/${repo} is:pr is:open`,
   );
   const [isFetching, setIsFetching] = useState(false);
@@ -31,7 +32,6 @@ export const PRs = () => {
   const pageSize = 25;
 
   useEffect(() => {
-    // const savedSearchTerm = localStorage.getItem('searchTerm');
     setSearchTerm((q) => search.add(q, 'repo', `${owner}/${repo}`, 0));
   }, [owner, repo]);
 
@@ -290,9 +290,6 @@ const detailedQuery = `
                 }
               }
             }
-          }
-          reviewRequests(first: 1) {
-            totalCount
           }
           isDraft
           assignees(first: 10) {

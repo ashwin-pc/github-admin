@@ -15,7 +15,6 @@ export interface Activity {
 }
 
 export const getTimelineEvents = (pr: PullRequest) => {
-  debugger;
   const events = pr.timelineItems?.nodes || [];
   const filteredEvents = events.filter(Boolean) as PullRequestTimelineItems[];
 
