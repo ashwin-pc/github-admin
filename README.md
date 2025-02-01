@@ -1,50 +1,81 @@
-# Getting Started with Create React App
+# Github Admin App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a Next.js application used to manage GitHub repositories through a GitHub OAuth integration. It replaces the default Create React App boilerplate.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (see [.nvmrc](.nvmrc))
+- A GitHub OAuth App with your client ID and secret.  
+  See [GitHub OAuth Apps](https://github.com/settings/developers) for details.
+
+## Getting Started
+
+1. **Clone the repository and install dependencies:**
+
+   ```sh
+   git clone <repository-url>
+   cd <repository-folder>
+   npm install
+   ```
+
+2. **Set environment variables:**
+
+   Create a `.env.local` file in the project root with:
+   ```sh
+   NEXT_PUBLIC_GITHUB_CLIENT_ID=your_client_id
+   GITHUB_CLIENT_SECRET=your_client_secret
+   ```
+   These credentials are used by the Next.js API routes in [src/app/api/auth](src/app/api/auth) to manage GitHub authentication.
+
+3. **Run the development server:**
+
+   Use the following command to start Next.js in development mode:
+   ```sh
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ## Available Scripts
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `npm run dev`
+Starts the app in development mode with hot reloading.  
+Your GitHub OAuth callback should point to [http://localhost:3000](http://localhost:3000).
 
 ### `npm run build`
+Builds the app for production into the `.next` folder and optimizes the build for best performance.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `npm start`
+Starts the Next.js server in production mode after a production build.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
+### `npm test`
+Runs the test suite in interactive watch mode.  
+Tests are configured via [src/setupTests.ts](src/setupTests.ts).
 
 ### `npm run deploy`
+Deploys a new production build. (Customize this script as needed for your hosting environment.)
 
-Used to deploy a new build to github pages. The -m flag is used to add a commit message to the deployment commit.
+## Project Structure
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- **src/**  
+  Contains the source code:
+  - `app/` – Next.js pages and layouts.
+  - `components/` – Reusable React components.
+  - `context/` – Application context, including authentication state managed in [`AppContext`](src/components/AppContext.tsx).
+  - `hooks/` – Custom hooks.
+  - `utils/` – Utility functions.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **next.config.mjs** – Next.js configuration.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- **.env**, **.env.local** – Environment variable files.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Authentication Flow
+
+- The login button in [`src/components/Header.tsx`](src/components/Header.tsx) triggers GitHub OAuth.
+- After successful authentication, GitHub redirects back and the code is exchanged for an access token in the API route at [`src/app/api/auth/token/route.ts`](src/app/api/auth/token/route.ts).
+- The token is stored in cookies and the authentication state is maintained by the application context.
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- [Next.js Documentation](https://nextjs.org/docs)
+- [GitHub OAuth Documentation](https://docs.github.com/en/developers/apps/building-oauth-apps)
+- [React Documentation](https://reactjs.org/)
