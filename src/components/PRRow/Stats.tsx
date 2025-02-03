@@ -6,12 +6,12 @@ import {
   RelativeTime,
   Text,
 } from '@primer/react';
-
 import {
   ClockIcon,
   CommentIcon,
   FileDiffIcon,
   PencilIcon,
+  InfoIcon, // <-- added InfoIcon
 } from '@primer/octicons-react';
 import {
   PullRequest,
@@ -22,8 +22,11 @@ import { getColorForNumber, Range } from '../../utils/get_color_for_number';
 import React from 'react';
 import { Tooltip } from '../Tooltip';
 import { getUniqueValues } from '../../utils/common';
+import { determinePRState } from '../PRRow/ReviewStatus'; // <-- added import
 
 export const Stats = ({ pr }: { pr: PullRequest }) => {
+  const reviewState = determinePRState(pr); // <-- compute review state
+
   // Collect comments from reviews, ensuring every step accounts for possible null values
   const unresolvedComments = pr.reviews?.nodes
     ?.filter(
@@ -134,6 +137,13 @@ export const Stats = ({ pr }: { pr: PullRequest }) => {
           </Text>
         }
       />
+      {/* New stat for review status reason */}
+      {reviewState.reason && (
+        <Stat
+          icon={InfoIcon}
+          text={<Text as="span">Status: {reviewState.reason}</Text>}
+        />
+      )}
     </Box>
   );
 };

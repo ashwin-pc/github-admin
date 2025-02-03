@@ -6,17 +6,26 @@ import {
   Text,
   Avatar,
   AvatarStack,
+  Spinner, // <-- added Spinner import
 } from '@primer/react';
 import { Tooltip } from '../Tooltip';
 import './index.css';
 import { CIStatus } from './CIStatus';
 import { MergeStatus } from './MergeStatus';
-import { ReviewStatus } from './ReviewStatus';
+import { determinePRState } from '../PRRow/ReviewStatus'; // add this if desired
 import { getUniqueValues } from '../../utils/common';
 import { emitter } from '../../utils/events';
 import { PullRequest } from '@octokit/graphql-schema';
 
 export const Info = ({ pr }: { pr: PullRequest }) => {
+  // Compute review state to determine status highlighting.
+  const reviewState = determinePRState(pr);
+  // Set a color based on review state.
+  let highlightColor = 'white'; // default is now white instead of 'transparent'
+  if (reviewState.state === 'Approved') highlightColor = 'success.fg';
+  else if (reviewState.state === 'Review Pending')
+    highlightColor = 'attention.fg';
+
   return (
     <Box className="content">
       <Box
@@ -47,62 +56,49 @@ export const Info = ({ pr }: { pr: PullRequest }) => {
           {pr.author?.login}
         </Text>
         {' | '}
-        {(pr?.assignees?.nodes?.length || 0) > 0 ? (
-          <Tooltip
-            aria-label={getUniqueValues(
-              (pr.assignees?.nodes || []).map((assignee) => assignee?.login),
-            ).join(', ')}
-            direction="s"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              as="span"
-              sx={{
-                marginLeft: '4px',
-                marginRight: '8px',
-              }}
-            >
-              Assigned:{' '}
-            </Text>
-            <AvatarStack>
-              {getUniqueValues(
-                (pr.assignees?.nodes || []).map((assignee) => {
-                  return {
-                    login: assignee?.login || '',
-                    avatarUrl: assignee?.avatarUrl || '',
-                  };
-                }),
-                'login',
-              ).map(({ login, avatarUrl }, index) => (
-                <Avatar
-                  src={avatarUrl}
-                  size={15}
-                  key={index}
-                  onClick={(e) =>
-                    emitter.emit('avatar:click', {
-                      login,
-                      type: 'assignee',
-                    })
-                  }
-                />
-              ))}
-            </AvatarStack>
-          </Tooltip>
-        ) : (
-          <Text
-            as="span"
-            sx={{
-              marginLeft: '4px',
-              marginRight: '8px',
-              color: 'attention.fg',
-            }}
-          >
-            {'Unassigned'}
-          </Text>
-        )}
+        <Tooltip
+          aria-label={`Review status: ${reviewState.state}. ${reviewState.reason}`}
+          direction="s"
+        >
+          {!pr.reviews ? (
+            <Spinner size="small" />
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {reviewState.reviewers && reviewState.reviewers.length > 0 && (
+                <AvatarStack
+                  sx={{
+                    border: `2px solid ${highlightColor}`,
+                    padding: '2px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {reviewState.reviewers.map(({ login, avatarUrl }, index) => (
+                    <Avatar
+                      src={avatarUrl}
+                      size={15}
+                      key={index}
+                      onClick={(e) =>
+                        emitter.emit('avatar:click', {
+                          login,
+                          type: 'reviewer',
+                        })
+                      }
+                    />
+                  ))}
+                </AvatarStack>
+              )}
+              <Text
+                as="span"
+                sx={{
+                  marginLeft: '4px',
+                  color: highlightColor,
+                }}
+              >
+                {reviewState.state}
+              </Text>
+            </Box>
+          )}
+        </Tooltip>
       </Box>
       <Box className="title">
         <Text
@@ -128,7 +124,6 @@ export const Info = ({ pr }: { pr: PullRequest }) => {
       <Box className="status">
         <MergeStatus pr={pr} />
         <CIStatus pr={pr} />
-        <ReviewStatus pr={pr} />
       </Box>
       <LabelGroup
         sx={{

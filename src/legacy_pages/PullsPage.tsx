@@ -223,6 +223,12 @@ const query = `
                 commit {
                   abbreviatedOid
                   authoredDate
+                  author {
+                    user {
+                      login
+                      avatarUrl
+                    }
+                  }
                 }
               }
               ... on IssueComment {
