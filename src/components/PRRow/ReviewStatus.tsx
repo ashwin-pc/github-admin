@@ -34,15 +34,19 @@ export function determinePRState(pr: PullRequest): {
   const approvedReviewersRaw =
     pr.reviews?.nodes?.filter(
       (r) =>
-        r &&
+        r != null &&
+        r.author != null &&
         r.state === 'APPROVED' &&
-        !BOT_LOGINS.includes(r.author.login.toLowerCase()) &&
-        r.author.login !== pr.author.login,
+        // Ensure pr.author is non-null before comparing.
+        (pr.author?.login ? r.author.login !== pr.author.login : true) &&
+        !BOT_LOGINS.includes(r.author.login.toLowerCase()),
     ) || [];
   // Remove duplicates by login.
   const approvedReviewersMap: Record<string, string> = {};
   approvedReviewersRaw.forEach((r) => {
-    approvedReviewersMap[r.author.login] = r.author.avatarUrl;
+    if (r && r.author) {
+      approvedReviewersMap[r.author.login] = r.author.avatarUrl;
+    }
   });
   const approvedReviewers = Object.entries(approvedReviewersMap).map(
     ([login, avatarUrl]) => ({ login, avatarUrl }),
@@ -101,7 +105,8 @@ export function determinePRState(pr: PullRequest): {
         reason: 'Only bot activities found; no valid reviewer.',
       };
     }
-    if (lastActivity.user === pr.author.login) {
+    // Use optional chaining on pr.author.login.
+    if (pr.author?.login && lastActivity.user === pr.author.login) {
       return {
         state: 'Review Pending',
         reason: `Last activity (${lastActivity.type}) was by the PR author (${lastActivity.user}).`,
@@ -110,8 +115,8 @@ export function determinePRState(pr: PullRequest): {
       if (lastActivity.type === 'PullRequestReview') {
         const lastReview = pr.reviews?.nodes?.find(
           (r) =>
-            r.author.login === lastActivity.user &&
-            new Date(r.submittedAt).getTime() === lastActivity.time,
+            r?.author?.login === lastActivity.user &&
+            new Date(r!.submittedAt!).getTime() === lastActivity.time,
         );
         if (lastReview && lastReview.state === 'APPROVED')
           return {
@@ -119,8 +124,8 @@ export function determinePRState(pr: PullRequest): {
             reason: `Last review approved by ${lastActivity.user}.`,
             reviewers: [
               {
-                login: lastReview.author.login,
-                avatarUrl: lastReview.author.avatarUrl,
+                login: lastReview.author!.login,
+                avatarUrl: lastReview.author!.avatarUrl,
               },
             ],
           };
@@ -184,7 +189,7 @@ export const ReviewStatus = ({ pr }: { pr: PullRequest }) => {
     result.reviewers && result.reviewers.length > 0
       ? () => (
           <AvatarStack>
-            {result.reviewers.map((r) => (
+            {result.reviewers!.map((r) => (
               <Avatar
                 key={r.login}
                 size={16}
