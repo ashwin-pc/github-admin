@@ -22,9 +22,17 @@ export const Info = ({ pr }: { pr: PullRequest }) => {
   const reviewState = determinePRState(pr);
   // Set a color based on review state.
   let highlightColor = 'white'; // default is now white instead of 'transparent'
-  if (reviewState.state === 'Approved') highlightColor = 'success.fg';
-  else if (reviewState.state === 'Review Pending')
-    highlightColor = 'attention.fg';
+  if (reviewState.state === 'Approved') {
+    highlightColor = 'success.fg';
+  } else if (reviewState.state === 'Review Pending') {
+    // Compute time elapsed in days from PR creation; adjust border brightness progressively.
+    const daysPending =
+      (Date.now() - new Date(pr.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysPending >= 100) highlightColor = 'danger.fg'; // very overdue
+    else if (daysPending >= 5)
+      highlightColor = 'severe.fg'; // moderately overdue
+    else highlightColor = 'attention.fg'; // pending less than 2 days
+  }
 
   return (
     <Box className="content">
@@ -80,7 +88,7 @@ export const Info = ({ pr }: { pr: PullRequest }) => {
                       onClick={(e) =>
                         emitter.emit('avatar:click', {
                           login,
-                          type: 'reviewer',
+                          type: 'reviewed-by',
                         })
                       }
                     />
