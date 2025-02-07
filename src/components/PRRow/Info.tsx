@@ -12,10 +12,10 @@ import { Tooltip } from '../Tooltip';
 import './index.css';
 import { CIStatus } from './CIStatus';
 import { MergeStatus } from './MergeStatus';
-import { determinePRState } from '../PRRow/ReviewStatus'; // add this if desired
 import { getUniqueValues } from '../../utils/common';
 import { emitter } from '../../utils/events';
 import { PullRequest } from '@octokit/graphql-schema';
+import { determinePRState } from 'src/utils/determine_review_status';
 
 export const Info = ({ pr }: { pr: PullRequest }) => {
   // Compute review state to determine status highlighting.

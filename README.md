@@ -1,5 +1,7 @@
 # Github Admin App
 
+![CI](https://github.com/ashwin-pc/github-admin/actions/workflows/ci.yml/badge.svg)
+
 This project is a Next.js application used to manage GitHub repositories through a GitHub OAuth integration. It replaces the default Create React App boilerplate.
 
 ## Prerequisites
