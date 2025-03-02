@@ -2,12 +2,15 @@ import { PullRequest } from '@octokit/graphql-schema';
 import { Box, Button, UnderlineNav, Spinner, PageLayout } from '@primer/react';
 import { GitPullRequestIcon } from '@primer/octicons-react';
 import './PullsPage.css';
-import { PageHeader, PRRow, ErrorBoundary } from '../components';
+import { PageHeader, PRRow, ErrorBoundary, LoginPrompt } from '../components';
 import { Blankslate } from '@primer/react/lib-esm/drafts';
 import { SearchBar } from '../components/SearchBar';
 import { useSearch } from 'src/hooks/useSearch';
+import { useAppContext } from '../context';
 
 export const PRs = () => {
+  const { isAuthenticated } = useAppContext();
+
   const {
     loading,
     results: pullRequests,
@@ -41,7 +44,7 @@ export const PRs = () => {
             <UnderlineNav.Item
               href={`/`}
               aria-current="page"
-              counter={totalPRs}
+              counter={isAuthenticated ? totalPRs : undefined}
               icon={GitPullRequestIcon}
             >
               Pull Requests
@@ -50,48 +53,52 @@ export const PRs = () => {
         </Box>
       </PageLayout.Header>
       <PageLayout.Content>
-        <Box className="list-view grid-item">
-          <SearchBar
-            onSearch={(query) => updateSearchTerm(query)}
-            query={searchTerm}
-            loading={loading}
-          />
-          <Box className="pr-list grid-item">
-            <ErrorBoundary>
-              <>
-                {loading && pullRequests.length === 0 ? (
-                  <Blankslate>
-                    <Blankslate.Visual>
-                      <Spinner />
-                    </Blankslate.Visual>
-                    <Blankslate.Heading>Loading the data!</Blankslate.Heading>
-                    <Blankslate.Description>
-                      Please wait, we are fetching the data for you.
-                    </Blankslate.Description>
-                    <Blankslate.PrimaryAction href="#">
-                      Reload
-                    </Blankslate.PrimaryAction>
-                  </Blankslate>
-                ) : (
-                  pullRequests.map((pr, index) => (
-                    <PRRow key={`list-${index}`} pr={pr} />
-                  ))
-                )}
-              </>
-            </ErrorBoundary>
+        {!isAuthenticated ? (
+          <LoginPrompt />
+        ) : (
+          <Box className="list-view grid-item">
+            <SearchBar
+              onSearch={(query) => updateSearchTerm(query)}
+              query={searchTerm}
+              loading={loading}
+            />
+            <Box className="pr-list grid-item">
+              <ErrorBoundary>
+                <>
+                  {loading && pullRequests.length === 0 ? (
+                    <Blankslate>
+                      <Blankslate.Visual>
+                        <Spinner />
+                      </Blankslate.Visual>
+                      <Blankslate.Heading>Loading the data!</Blankslate.Heading>
+                      <Blankslate.Description>
+                        Please wait, we are fetching the data for you.
+                      </Blankslate.Description>
+                      <Blankslate.PrimaryAction href="#">
+                        Reload
+                      </Blankslate.PrimaryAction>
+                    </Blankslate>
+                  ) : (
+                    pullRequests.map((pr, index) => (
+                      <PRRow key={`list-${index}`} pr={pr} />
+                    ))
+                  )}
+                </>
+              </ErrorBoundary>
+            </Box>
+            <Box className="load-more-container">
+              {hasMore && (
+                <Button
+                  variant="invisible"
+                  disabled={loading}
+                  onClick={() => loadMoreData()}
+                >
+                  {loading ? 'Loading...' : 'Load More'}
+                </Button>
+              )}
+            </Box>
           </Box>
-          <Box className="load-more-container">
-            {hasMore && (
-              <Button
-                variant="invisible"
-                disabled={loading}
-                onClick={() => loadMoreData()}
-              >
-                {loading ? 'Loading...' : 'Load More'}
-              </Button>
-            )}
-          </Box>
-        </Box>
+        )}
       </PageLayout.Content>
       <PageLayout.Pane hidden={true} resizable sticky>
         <Box className="details-view grid-item">
@@ -101,6 +108,7 @@ export const PRs = () => {
     </PageLayout>
   );
 };
+
 const quickQuery = `
   query SearchPullRequests($q: String!, $first: Int!, $after: String) {
     search(query: $q, type: ISSUE, first: $first, after: $after) {

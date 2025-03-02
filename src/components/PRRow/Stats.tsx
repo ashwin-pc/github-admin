@@ -22,7 +22,7 @@ import { getColorForNumber, Range } from '../../utils/get_color_for_number';
 import React from 'react';
 import { Tooltip } from '../Tooltip';
 import { getUniqueValues } from '../../utils/common';
-import { determinePRState } from '../PRRow/ReviewStatus'; // <-- added import
+import { determinePRState } from '../../utils/determine_review_status';
 
 export const Stats = ({ pr }: { pr: PullRequest }) => {
   const reviewState = determinePRState(pr); // <-- compute review state

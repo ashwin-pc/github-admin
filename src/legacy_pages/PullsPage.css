@@ -48,3 +48,15 @@
 .detail-view {
   grid-area: detail;
 }
+
+.login-prompt-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.login-button {
+  margin-top: 1rem;
+}
