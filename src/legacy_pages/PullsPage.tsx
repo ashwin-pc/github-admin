@@ -16,6 +16,10 @@ export const PRs = () => {
     results: pullRequests,
     searchTerm,
     updateSearchTerm,
+    selectedAuthors,
+    availableAuthors,
+    updateSelectedAuthors,
+    updateAvailableAuthors,
     hasMore,
     loadMoreData,
     totalResults: totalPRs,
@@ -61,6 +65,10 @@ export const PRs = () => {
               onSearch={(query) => updateSearchTerm(query)}
               query={searchTerm}
               loading={loading}
+              selectedAuthors={selectedAuthors}
+              availableAuthors={availableAuthors}
+              onAuthorsChange={updateSelectedAuthors}
+              onAvailableAuthorsChange={updateAvailableAuthors}
             />
             <Box className="pr-list grid-item">
               <ErrorBoundary>

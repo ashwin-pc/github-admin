@@ -1,3 +1,4 @@
+export { AuthorFilter } from './AuthorFilter';
 export { PageHeader } from './Header';
 export { PRRow } from './PRRow';
 export { ErrorBoundary } from './ErrorBoundary';
