@@ -5,12 +5,17 @@ import { emitter } from '../utils/events';
 import { search } from '../utils/search_string';
 import { useAppContext } from 'src/context';
 import { Filters } from './Filters';
+import { AuthorFilter } from './AuthorFilter';
 
 interface SearchBarProps {
   query: string;
   onSearch: (searchTerm: string) => void;
   disabled?: boolean;
   loading?: boolean;
+  selectedAuthors?: string[];
+  availableAuthors?: string[];
+  onAuthorsChange?: (authors: string[]) => void;
+  onAvailableAuthorsChange?: (authors: string[]) => void;
 }
 
 export const SearchBar = ({
@@ -18,6 +23,10 @@ export const SearchBar = ({
   onSearch,
   disabled,
   loading,
+  selectedAuthors = [],
+  availableAuthors = [],
+  onAuthorsChange,
+  onAvailableAuthorsChange,
 }: SearchBarProps) => {
   const { viewer } = useAppContext();
   const [searchTerm, setSearchTerm] = useState(query);
@@ -88,6 +97,14 @@ export const SearchBar = ({
         </FormControl.Caption>
         <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
           <Filters onFilter={handleFilter} />
+          {onAuthorsChange && onAvailableAuthorsChange && (
+            <AuthorFilter
+              selectedAuthors={selectedAuthors}
+              availableAuthors={availableAuthors}
+              onAuthorsChange={onAuthorsChange}
+              onAvailableAuthorsChange={onAvailableAuthorsChange}
+            />
+          )}
           <TextInput
             prefix="Test"
             type="text"

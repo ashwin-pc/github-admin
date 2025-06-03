@@ -14,6 +14,8 @@ export const useSearch = <T,>(
   const { isAuthenticated } = useAppContext();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+  const [availableAuthors, setAvailableAuthors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<T[]>([]);
   const [totalResults, setTotalResults] = useState(0);
@@ -22,16 +24,35 @@ export const useSearch = <T,>(
   const fetchIdRef = useRef(0); // Used to track the latest fetch request
 
   useEffect(() => {
-    const getInitialSearchTerm = () => {
+    const getInitialValues = () => {
       if (typeof window === 'undefined') {
-        return defaultSearchTerm;
+        return {
+          searchTerm: defaultSearchTerm,
+          selectedAuthors: [],
+          availableAuthors: [],
+        };
       }
       const query = new URLSearchParams(window.location.search);
-      return query.get('q') || defaultSearchTerm;
+      const searchTerm = query.get('q') || defaultSearchTerm;
+      const selectedAuthors = query.get('authors')?.split(',').filter(Boolean) || [];
+      const availableAuthors = query.get('authorList')?.split(',').filter(Boolean) || [];
+      
+      return { searchTerm, selectedAuthors, availableAuthors };
     };
 
-    setSearchTerm(getInitialSearchTerm());
+    const { searchTerm, selectedAuthors, availableAuthors } = getInitialValues();
+    setSearchTerm(searchTerm);
+    setSelectedAuthors(selectedAuthors);
+    setAvailableAuthors(availableAuthors);
   }, [defaultSearchTerm]);
+
+  const updateURL = (term: string, authors: string[], authorList: string[]) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', term);
+    url.searchParams.set('authors', authors.join(','));
+    url.searchParams.set('authorList', authorList.join(','));
+    window.history.pushState({}, '', url.toString());
+  };
 
   const updateSearchTerm = (valueOrUpdater: string | UpdaterFunction) => {
     const newTerm =
@@ -39,27 +60,45 @@ export const useSearch = <T,>(
         ? valueOrUpdater(searchTerm)
         : valueOrUpdater;
     setSearchTerm(newTerm);
-    const url = new URL(window.location.href);
-    url.searchParams.set('q', newTerm);
-    window.history.pushState({}, '', url.toString());
+    updateURL(newTerm, selectedAuthors, availableAuthors);
+  };
+
+  const updateSelectedAuthors = (authors: string[]) => {
+    setSelectedAuthors(authors);
+    updateURL(searchTerm, authors, availableAuthors);
+  };
+
+  const updateAvailableAuthors = (authors: string[]) => {
+    setAvailableAuthors(authors);
+    updateURL(searchTerm, selectedAuthors, authors);
+  };
+
+  const buildSearchQuery = () => {
+    let query = searchTerm;
+    if (selectedAuthors.length > 0) {
+      const authorQuery = selectedAuthors.map(author => `author:${author}`).join(' ');
+      query = query ? `${query} ${authorQuery}` : authorQuery;
+    }
+    return query;
   };
 
   const fetchData = async (loadMore = false) => {
-    if (!searchTerm || !isAuthenticated) return;
+    const finalQuery = buildSearchQuery();
+    if (!finalQuery || !isAuthenticated) return;
     const currentFetchId = ++fetchIdRef.current; // Increment and store the current fetch ID
     setLoading(true);
 
     try {
       const responsePromise = graphqlWithProxy(graphqlQuery, {
         ...queryVariables,
-        q: searchTerm,
+        q: finalQuery,
         after: loadMore ? endCursor : null,
       });
 
       if (quickQuery) {
         const quickPromise = graphqlWithProxy(quickQuery, {
           ...queryVariables,
-          q: searchTerm,
+          q: finalQuery,
           after: loadMore ? endCursor : null,
         });
 
@@ -112,13 +151,17 @@ export const useSearch = <T,>(
 
   useEffect(() => {
     fetchData();
-  }, [searchTerm, isAuthenticated]);
+  }, [searchTerm, selectedAuthors, isAuthenticated]);
 
   useEffect(() => {
     const handleRouteChange = () => {
       const query = new URLSearchParams(window.location.search);
       const term = query.get('q') || '';
+      const authors = query.get('authors')?.split(',').filter(Boolean) || [];
+      const authorList = query.get('authorList')?.split(',').filter(Boolean) || [];
       setSearchTerm(term);
+      setSelectedAuthors(authors);
+      setAvailableAuthors(authorList);
     };
 
     window.addEventListener('popstate', handleRouteChange);
@@ -129,6 +172,10 @@ export const useSearch = <T,>(
   return {
     searchTerm,
     updateSearchTerm,
+    selectedAuthors,
+    availableAuthors,
+    updateSelectedAuthors,
+    updateAvailableAuthors,
     loading,
     results,
     fetchData,
