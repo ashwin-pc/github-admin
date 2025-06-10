@@ -6,15 +6,20 @@ interface AuthorFilterProps {
   selectedAuthors: string[];
   availableAuthors: string[];
   onAuthorsChange: (authors: string[]) => void;
-  onAvailableAuthorsChange: (authors: string[]) => void;
+  onAvailableAuthorsChange: (authors: string[]) => void; // This might become unused
+  addNewAuthorsToFilter: (authorsToAdd: string[]) => void;
+  removeAuthorFromFilter: (authorToRemove: string) => void;
 }
 
-export const AuthorFilter = ({ 
-  selectedAuthors, 
-  availableAuthors, 
-  onAuthorsChange, 
-  onAvailableAuthorsChange 
-}: AuthorFilterProps) => {
+export const AuthorFilter = (props: AuthorFilterProps) => {
+  const {
+    selectedAuthors,
+    availableAuthors,
+    onAuthorsChange,
+    // onAvailableAuthorsChange, // Keep for now, might be removed later
+    addNewAuthorsToFilter,
+    removeAuthorFromFilter
+  } = props;
   const [newAuthor, setNewAuthor] = useState('');
 
   const toggleAuthor = (author: string) => {
@@ -32,16 +37,13 @@ export const AuthorFilter = ({
       .filter(author => author && !availableAuthors.includes(author));
     
     if (authorsToAdd.length > 0) {
-      const updatedAvailable = [...availableAuthors, ...authorsToAdd];
-      onAvailableAuthorsChange(updatedAvailable);
-      onAuthorsChange([...selectedAuthors, ...authorsToAdd]);
+      addNewAuthorsToFilter(authorsToAdd);
       setNewAuthor('');
     }
   };
 
   const removeAuthor = (author: string) => {
-    onAuthorsChange(selectedAuthors.filter(a => a !== author));
-    onAvailableAuthorsChange(availableAuthors.filter(a => a !== author));
+    removeAuthorFromFilter(author);
   };
 
   return (

@@ -16,6 +16,8 @@ interface SearchBarProps {
   availableAuthors?: string[];
   onAuthorsChange?: (authors: string[]) => void;
   onAvailableAuthorsChange?: (authors: string[]) => void;
+  addNewAuthorsToFilter?: (authorsToAdd: string[]) => void;
+  removeAuthorFromFilter?: (authorToRemove: string) => void;
 }
 
 export const SearchBar = ({
@@ -27,6 +29,8 @@ export const SearchBar = ({
   availableAuthors = [],
   onAuthorsChange,
   onAvailableAuthorsChange,
+  addNewAuthorsToFilter,
+  removeAuthorFromFilter,
 }: SearchBarProps) => {
   const { viewer } = useAppContext();
   const [searchTerm, setSearchTerm] = useState(query);
@@ -103,6 +107,8 @@ export const SearchBar = ({
               availableAuthors={availableAuthors}
               onAuthorsChange={onAuthorsChange}
               onAvailableAuthorsChange={onAvailableAuthorsChange}
+              addNewAuthorsToFilter={addNewAuthorsToFilter}
+              removeAuthorFromFilter={removeAuthorFromFilter}
             />
           )}
           <TextInput

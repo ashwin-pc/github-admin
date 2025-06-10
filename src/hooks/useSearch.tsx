@@ -65,12 +65,28 @@ export const useSearch = <T,>(
 
   const updateSelectedAuthors = (authors: string[]) => {
     setSelectedAuthors(authors);
-    updateURL(searchTerm, authors, availableAuthors);
+    updateURL(searchTerm, authors, availableAuthors); // This is correct as per plan item 3
   };
 
   const updateAvailableAuthors = (authors: string[]) => {
     setAvailableAuthors(authors);
-    updateURL(searchTerm, selectedAuthors, authors);
+    updateURL(searchTerm, selectedAuthors, authors); // This is correct as per plan item 4
+  };
+
+  const addNewAuthorsToFilter = (authorsToAdd: string[]) => {
+    const newSelectedAuthors = [...selectedAuthors, ...authorsToAdd];
+    const newAvailableAuthors = [...availableAuthors, ...authorsToAdd];
+    setSelectedAuthors(newSelectedAuthors);
+    setAvailableAuthors(newAvailableAuthors);
+    updateURL(searchTerm, newSelectedAuthors, newAvailableAuthors);
+  };
+
+  const removeAuthorFromFilter = (authorToRemove: string) => {
+    const newSelectedAuthors = selectedAuthors.filter(author => author !== authorToRemove);
+    const newAvailableAuthors = availableAuthors.filter(author => author !== authorToRemove);
+    setSelectedAuthors(newSelectedAuthors);
+    setAvailableAuthors(newAvailableAuthors);
+    updateURL(searchTerm, newSelectedAuthors, newAvailableAuthors);
   };
 
   const buildSearchQuery = () => {
@@ -176,6 +192,8 @@ export const useSearch = <T,>(
     availableAuthors,
     updateSelectedAuthors,
     updateAvailableAuthors,
+    addNewAuthorsToFilter,
+    removeAuthorFromFilter,
     loading,
     results,
     fetchData,
