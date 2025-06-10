@@ -20,6 +20,8 @@ export const PRs = () => {
     availableAuthors,
     updateSelectedAuthors,
     updateAvailableAuthors,
+    addNewAuthorsToFilter,
+    removeAuthorFromFilter,
     hasMore,
     loadMoreData,
     totalResults: totalPRs,
@@ -69,6 +71,8 @@ export const PRs = () => {
               availableAuthors={availableAuthors}
               onAuthorsChange={updateSelectedAuthors}
               onAvailableAuthorsChange={updateAvailableAuthors}
+              addNewAuthorsToFilter={addNewAuthorsToFilter}
+              removeAuthorFromFilter={removeAuthorFromFilter}
             />
             <Box className="pr-list grid-item">
               <ErrorBoundary>
