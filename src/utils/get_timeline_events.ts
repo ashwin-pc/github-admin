@@ -61,23 +61,30 @@ export const getTimelineEvents = (pr: PullRequest) => {
     }
   });
 
-  const groupedActivities = activities
-    .reduce(
-      (acc, activity) => {
-        if (
-          acc[acc.length - 1].type === activity.type &&
-          activity.type === 'PullRequestCommit'
-        ) {
-          acc[acc.length - 1].message += `; ${activity.message}`;
-          acc[acc.length - 1].date = activity.date; // Use the latest date
-        } else {
-          acc.push(activity);
-        }
-        return acc;
-      },
-      [activities[0]],
-    )
-    .filter(Boolean) as Activity[];
+  if (activities.length === 0) {
+    return {
+      activities: [],
+      totalEvents: pr.timelineItems?.totalCount,
+    };
+  }
+
+  const groupedActivities = activities.reduce((acc, activity) => {
+    if (acc.length === 0) {
+      acc.push(activity);
+    } else {
+      const lastActivity = acc[acc.length - 1];
+      if (
+        lastActivity.type === activity.type &&
+        activity.type === 'PullRequestCommit'
+      ) {
+        lastActivity.message += `; ${activity.message}`;
+        lastActivity.date = activity.date; // Use the latest date
+      } else {
+        acc.push(activity);
+      }
+    }
+    return acc;
+  }, [] as Activity[]);
 
   return {
     activities: groupedActivities,
@@ -85,7 +92,7 @@ export const getTimelineEvents = (pr: PullRequest) => {
   };
 };
 
-function getReviewMessage(review: PullRequestReview) {
+export function getReviewMessage(review: PullRequestReview) {
   const commentCount = review.comments.totalCount;
   switch (review.state) {
     case 'APPROVED':
