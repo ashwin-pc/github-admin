@@ -101,7 +101,7 @@ export const SearchBar = ({
         </FormControl.Caption>
         <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
           <Filters onFilter={handleFilter} />
-          {onAuthorsChange && onAvailableAuthorsChange && (
+          {onAuthorsChange && onAvailableAuthorsChange && addNewAuthorsToFilter && removeAuthorFromFilter && (
             <AuthorFilter
               selectedAuthors={selectedAuthors}
               availableAuthors={availableAuthors}
