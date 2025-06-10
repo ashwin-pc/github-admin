@@ -1,75 +1,43 @@
+import "gantt-task-react/dist/index.css";
+import "gantt-task-react/dist/index.css";
 import { PullRequest } from '@octokit/graphql-schema';
-import {
-  HistoryIcon,
-  GitCommitIcon,
-  CommentIcon,
-} from '@primer/octicons-react';
-import {
-  Avatar,
-  Box,
-  Octicon,
-  RelativeTime,
-  Spinner,
-  Timeline,
-  Token,
-  Truncate,
-} from '@primer/react';
+import { HistoryIcon, CommentIcon } from '@primer/octicons-react';
+import { Box, Token, Spinner } from '@primer/react';
 import { Tooltip } from '../Tooltip';
-import { getTimelineEvents } from '../../utils/get_timeline_events';
+import { PRGanttChart } from '../PRGanttChart'; // Import the new Gantt Chart component
+import { getTimelineEvents } from '../../utils/get_timeline_events'; // This will be used for totalEvents count for now
 
 export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
-  const { activities, totalEvents } = getTimelineEvents(pr);
-  // get the last 4 activities in the array
-  const subset = activities.slice(-4);
+  // We still need totalEvents for the summary display.
+  // In a future step, this could be derived differently or from the Gantt tasks if appropriate.
+  const { totalEvents } = getTimelineEvents(pr);
 
-  if (!pr.comments) {
+
+  if (!pr.comments) { // Keep this check if PR data might be incomplete
     return (
       <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
       >
-        <Spinner size="small" />
+        <Spinner size="small" /> Loading timeline data...
       </Box>
     );
   }
 
   return (
-    <Timeline
-      className="timeline"
-      sx={{
-        backgroundColor: 'canvas.default',
-      }}
-    >
-      {subset
-        .map((activity, index) => (
-          <Timeline.Item condensed="true" key={index}>
-            <Timeline.Badge>
-              {activity.author ? (
-                <Avatar
-                  size={17}
-                  src={activity.author.avatarUrl}
-                  aria-label={activity.author.login}
-                />
-              ) : (
-                <Octicon icon={GitCommitIcon} size={17} />
-              )}
-            </Timeline.Badge>
-            <Timeline.Body>
-              <Truncate maxWidth={600} title={activity.message}>
-                <RelativeTime date={new Date(activity.date)} /> -{' '}
-                {activity.author?.login}: {activity.message}
-              </Truncate>
-            </Timeline.Body>
-          </Timeline.Item>
-        ))
-        .reverse()}
+    <Box sx={{ position: 'relative', height: '100%', backgroundColor: 'canvas.default' }}>
+      <PRGanttChart pr={pr} />
       <Box
         sx={{
           position: 'absolute',
-          right: '5px',
-          bottom: '5px',
-          backgroundColor: 'canvas.default',
+          right: '10px', // Adjusted for better spacing
+          bottom: '10px', // Adjusted for better spacing
+          backgroundColor: 'canvas.overlay', // Use overlay for better visibility over chart
+          padding: '5px',
+          borderRadius: '6px',
+          boxShadow: 'medium', // Add a subtle shadow
           display: 'flex',
-          gap: '5px',
+          gap: '10px', // Increased gap
+          zIndex: 10, // Ensure it's above the Gantt chart
         }}
       >
         {pr.comments?.totalCount > 0 && (
@@ -78,18 +46,24 @@ export const TimelineSection = ({ pr }: { pr: PullRequest }) => {
             direction="w"
           >
             <Token
-              text={pr.comments.totalCount}
+              text={pr.comments.totalCount.toString()} // Ensure text is string
               leadingVisual={CommentIcon}
               as="span"
+              sx={{ fontSize: 'small' }} // Consistent sizing
             />
           </Tooltip>
         )}
         {totalEvents > 0 && (
           <Tooltip aria-label={`${totalEvents} events in total`} direction="w">
-            <Token text={totalEvents} leadingVisual={HistoryIcon} as="span" />
+            <Token
+              text={totalEvents.toString()} // Ensure text is string
+              leadingVisual={HistoryIcon}
+              as="span"
+              sx={{ fontSize: 'small' }} // Consistent sizing
+            />
           </Tooltip>
         )}
       </Box>
-    </Timeline>
+    </Box>
   );
 };
